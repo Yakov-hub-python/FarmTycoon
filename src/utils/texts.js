@@ -33,6 +33,15 @@ const HELP = 'ℹ️ <b>ПОМОЩЬ</b>\n\
 /farm — ферма\n\
 /help — справка'
 
+const PLANT_ERRORS = {
+    unknown_crop:     '❓ Такой культуры нет',
+    no_free_slots:    '🌱 Все слоты заняты. Расширь поле!',
+    not_enough_coins: '💰 Не хватает монет',
+    no_seeds:         '🎒 Нет семян. Купи на рынке!',
+    slot_occupied:    '🌱 Этот слот уже занят',
+    bad_slot:         '❌ Неверный слот',
+}
+
 /** 
  * @param {Object} user Игрок
  * @returns {string} Сообщение меню
