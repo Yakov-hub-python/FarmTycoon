@@ -70,4 +70,4 @@ async function backupHandler(ctx) {
 
 
 
-module.exports = { backupHandler, restoreHandler }
+module.exports = { backupHandler }
