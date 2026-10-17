@@ -1,0 +1,8 @@
+node_modules/
+.env
+database.json
+database.json.tmp
+database.json.corrupt
+*.log
+npm-debug.log*
+database.json.before_restore
