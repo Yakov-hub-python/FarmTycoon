@@ -1,4 +1,5 @@
 const fs = require('fs/promises')
+const axios = require('axios')
 const { ADMIN_ID, DB_PATH } = require('../../service/config')
 
 /**
@@ -47,18 +48,16 @@ async function restoreHandler(ctx) {
 
     console.log(`📥 [RESTORE] Запрос от ${ctx.from.id}, файл ${doc.file_name}`)
 
-    // 5. Скачиваем файл
+    // 5. Скачиваем файл через axios (fetch часто падает на хостингах)
     let raw
     try {
         const link = await ctx.telegram.getFileLink(doc.file_id)
-        const response = await fetch(link.href)
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`)
-        }
-        raw = await response.text()
+        // Скачиваем как буфер, чтобы не повредить UTF-8
+        const response = await axios.get(link.href, { responseType: 'arraybuffer' })
+        raw = Buffer.from(response.data).toString('utf-8')
     } catch (e) {
         console.error(`❌ [RESTORE] Не удалось скачать файл:`, e.message)
-        return ctx.reply('❌ Не удалось скачать файл, попробуй ещё раз')
+        return ctx.reply('❌ Не удалось скачать файл с сервера Telegram. Попробуй ещё раз.')
     }
 
     // 6. Проверяем, что это валидный JSON
