@@ -1,6 +1,6 @@
 // ИМПОРТЫ
 const { Markup } = require('telegraf')
-const { timeLeft, formatTime, formatNumber, isReady, nextSlotPrice } = require('../service/logic')
+const logic = require('../service/logic')
 const { CROPS, CROP_ORDER } = require('../service/config')
 
 
@@ -16,8 +16,8 @@ function _slotLabel(i, slot) {
     const crop = CROPS[slot.crop]
     if (!crop) return `🌱 Слот ${i + 1}: пусто`
 
-    const left = timeLeft(slot)
-    if (left > 0) return `${crop.emoji} Слот ${i + 1}: ${formatTime(left)}`
+    const left = logic.time.timeLeft(slot)
+    if (left > 0) return `${crop.emoji} Слот ${i + 1}: ${logic.format.formatTime(left)}`
     return `✅ Собрать ${crop.emoji} (${i + 1})`
 }
 
@@ -29,6 +29,7 @@ function _slotLabel(i, slot) {
 function mainMenuKb() {
     return Markup.inlineKeyboard([
         [Markup.button.callback('🌾 Открыть ферму', 'farm')],
+        [Markup.button.callback('🏆 ТОП', 'top')],
         [Markup.button.callback('ℹ️ Помощь', 'help')],
     ])
 }
@@ -66,7 +67,7 @@ function farmKb(user) {
     const rows = []
 
     // 1. «Собрать всё» — только если есть готовые слоты
-    if (user.slots.some(slot => isReady(slot))) {
+    if (user.slots.some(slot => logic.time.isReady(slot))) {
         rows.push([
             Markup.button.callback('🧺 Собрать всё', 'harvest_all'),
         ])
@@ -84,7 +85,7 @@ function farmKb(user) {
     const seedBtns = CROP_ORDER.map(key => {
         const crop = CROPS[key]
         return Markup.button.callback(
-            `${crop.emoji} ${formatNumber(crop.seed)}`,
+            `${crop.emoji} ${logic.format.formatNumber(crop.seed)}`,
             `plant:${key}`
         )
     })
@@ -95,7 +96,7 @@ function farmKb(user) {
     // 4. Расширение
     rows.push([
         Markup.button.callback(
-            `🟫 Расширить — ${formatNumber(nextSlotPrice(user))}`,
+            `🟫 Расширить — ${logic.format.formatNumber(logic.expansion.nextSlotPrice(user))}`,
             'expand'
         ),
     ])
@@ -113,6 +114,17 @@ function farmKb(user) {
     return Markup.inlineKeyboard(rows)
 }
 
+/**
+ * Клавиатура экрана ТОП.
+ * @returns {Object} Telegraf Markup
+ */
+function topsKb(){
+    return Markup.inlineKeyboard([
+        [Markup.button.callback('💰 По монетам', 'top_coins')],
+        [Markup.button.callback('🏆 Лучший урожай', 'top_harvest')],
+        [Markup.button.callback('⬅️ В меню', 'menu')],
+    ])
+}
 
 // ===== ЭКСПОРТ =====
 module.exports = {
@@ -120,4 +132,5 @@ module.exports = {
     backKb,
     afterHarvestKb,
     farmKb,
+    topsKb
 }

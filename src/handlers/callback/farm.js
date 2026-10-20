@@ -25,12 +25,17 @@ async function plantCallback(ctx) {
     const cropKey = ctx.match[1]
 
     const user = await db.getUser(ctx.from.id)
-    const res = logic.plant(user, cropKey)
+    if( user.username === 'unknown' || user.first_name !== ctx.from.first_name) {
+        user.username = ctx.from.username || 'unknown'
+        user.firstName = ctx.from.first_name || 'unknown'
+        await db.saveUser(ctx.from.id, user)
+    }
+    const res = logic.plant.plant(user, cropKey)
 
     if (res.ok) {
         await db.saveUser(ctx.from.id, user)
         await ctx.answerCbQuery(
-            `Посажено! Созреет через ${logic.formatTime(CROPS[cropKey].growTime)}`
+            `Посажено! Созреет через ${logic.format.formatTime(CROPS[cropKey].growTime)}`
         )
     } else {
         await ctx.answerCbQuery(
@@ -47,11 +52,11 @@ async function slotCallback(ctx) {
     const index = parseInt(ctx.match[1], 10)
 
     const user = await db.getUser(ctx.from.id)
-    const res = logic.harvestSlot(user, index)
+    const res = logic.plant.harvestSlot(user, index)
 
     if (!res.ok) {
         if (res.error === 'not_ready') {
-            await ctx.answerCbQuery(`⏳ Ещё ${logic.formatTime(res.left)}`)
+            await ctx.answerCbQuery(`⏳ Ещё ${logic.format.formatTime(res.left)}`)
         } else if (res.error === 'empty') {
             await ctx.answerCbQuery('🌱 Слот пуст — посади что-нибудь')
         } else {
@@ -73,7 +78,7 @@ async function slotCallback(ctx) {
 
 async function harvestAllCallback(ctx) {
     const user = await db.getUser(ctx.from.id)
-    const items = logic.harvestAll(user)
+    const items = logic.plant.harvestAll(user)
 
     if (items.length === 0) {
         await ctx.answerCbQuery('⏳ Пока нечего собирать', { show_alert: true })
@@ -92,7 +97,7 @@ async function harvestAllCallback(ctx) {
 
 async function expandCallback(ctx) {
     const user = await db.getUser(ctx.from.id)
-    const res = logic.expand(user)
+    const res = logic.expansion.expand(user)
 
     if (res.ok) {
         await db.saveUser(ctx.from.id, user)
@@ -106,7 +111,7 @@ async function expandCallback(ctx) {
         } 
         if(res.error === 'not_enough_coins'){
             await ctx.answerCbQuery(
-                `💰 Не хватает монет. Нужно ${logic.formatNumber(res.price)}`,
+                `💰 Не хватает монет. Нужно ${logic.format.formatNumber(res.price)}`,
                 { show_alert: true }
             )
         }

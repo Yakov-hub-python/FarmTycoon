@@ -8,7 +8,7 @@ async function main() {
     user.coin = 999999999  // чтобы точно хватило на все слоты
 
     while (user.slots.length < SLOT_MAX_COUNT) {
-        const res = logic.expand(user)
+        const res = logic.expansion.expand(user)
         console.log(`Слотов: ${user.slots.length}, expand:`, res)
         if (!res.ok) {
             console.log('Остановка:', res.error)

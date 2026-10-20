@@ -18,6 +18,11 @@ function _newUser(userId) {
         createdAt: Math.floor(Date.now() / 1000),
         coin: START_COINS,
         slots: Array(START_SLOTS).fill(null),
+        stats: {
+            bestHarvest: 0,
+            bestCrop: null,
+            bestMutation: null
+        },
     }
 }
 
@@ -143,6 +148,14 @@ function normalizeUser(user, userId) {
             user.slots[i] = null
             changed = true
         }
+        if (!user.stats || typeof user.stats !== 'object' || Array.isArray(user.stats)) {
+            user.stats = { bestHarvest: 0, bestCrop: null, bestMutation: null }
+            changed = true
+        }
+        if (!Number.isInteger(user.stats.bestHarvest)) {
+            user.stats.bestHarvest = 0
+            changed = true
+        }
     }
 
     return changed
@@ -190,5 +203,13 @@ async function saveUser(userId, user) {
     await _writeDb(db)
 }
 
+/**
+ * Возвращает массив всех юзеров. Не нормализует.
+ * @returns {Promise<Array<Object>>}
+ */
+async function getAllUsers() {
+    const db = await _readDb()
+    return Object.values(db.users)
+}
 
-module.exports = { getUser, saveUser, normalizeUser }
+module.exports = { getUser, saveUser, normalizeUser, getAllUsers }

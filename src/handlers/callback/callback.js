@@ -10,6 +10,9 @@ function registerCallbacks(bot) {
     bot.action(/^slot:(\d+)/, async(ctx) => require('./farm').slotCallback(ctx))
     bot.action('harvest_all', async(ctx) => require('./farm').harvestAllCallback(ctx))
     bot.action('expand', async(ctx) => require('./farm').expandCallback(ctx))
+    bot.action('top', async(ctx) => require('./top').topCallback(ctx))
+    bot.action('top_coins', async(ctx) => require('./top').topCoinsCallback(ctx))
+    bot.action('top_harvest', async(ctx) => require('./top').topHarvestCallback(ctx))
 }
 
 

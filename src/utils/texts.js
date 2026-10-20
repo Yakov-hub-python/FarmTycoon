@@ -1,6 +1,7 @@
 // ИМПОРТЫ
-const { formatNumber, formatTime, timeLeft, isReady, nextSlotPrice, readyAt } = require('../service/logic')
+const logic = require('../service/logic')
 const { CROPS, CROP_ORDER, MUTATIONS, MUTATION_RANK } = require('../service/config')
+
 
 
 /**
@@ -48,7 +49,7 @@ const PLANT_ERRORS = {
  */
 function menuText(user) {
     return `🌾 <b>FARM TYCOON</b>\n\
-💰 Монеты: ${formatNumber(user.coin)}\n\
+💰 Монеты: ${logic.format.formatNumber(user.coin)}\n\
 🌱 Слоты: ${user.slots.length}`
 }
 
@@ -63,10 +64,10 @@ function farmText(user) {
     let ready = 0
     for (let i = 0; i < user.slots.length; i++) {
         if (user.slots[i] !== null) busy++
-        if (isReady(user.slots[i])) ready++
+        if (logic.time.isReady(user.slots[i])) ready++
     }
     const head = `🌾 <b>ТВОЯ ФЕРМА</b>
-💰 ${formatNumber(user.coin)} монет
+💰 ${logic.format.formatNumber(user.coin)} монет
 Слоты: ${busy}/${total} занято`
     const tail = ready > 0 ? ` · ✅ готово: ${ready}` : ''
     return head + tail
@@ -108,7 +109,7 @@ function harvestText(items, balance) {
         if (g.mutation === 'common') {
             return `${crop.emoji} ${crop.name} ×${g.count}`
         }
-        return `${mut.emoji} ${mut.name} ${crop.emoji} ×${g.count} (+${formatNumber(g.sum)})`
+        return `${mut.emoji} ${mut.name} ${crop.emoji} ×${g.count} (+${logic.format.formatNumber(g.sum)})`
     })
 
     // 4. Считаем общую сумму
@@ -123,15 +124,45 @@ function harvestText(items, balance) {
     }
 
     parts.push('')
-    parts.push(`💰 Получено: ${formatNumber(total)} монет`)
-    parts.push(`💼 Баланс: ${formatNumber(balance)}`)
+    parts.push(`💰 Получено: ${logic.format.formatNumber(total)} монет`)
+    parts.push(`💼 Баланс: ${logic.format.formatNumber(balance)}`)
 
     return parts.join('\n')
 }
 
+function topCoinsText(users) {
+    if (users.length === 0) return '💰 <b>ТОП БОГАЧЕЙ</b>\n\nПока пусто.'
+
+    const lines = users.map((user, i) => {
+        const name = user.username || user.firstName || 'Игрок'
+        return `${i + 1}. <b>${name}</b> — ${logic.format.formatNumber(user.coin)} монет`
+    })
+
+    return `💰 <b>ТОП БОГАЧЕЙ</b>\n(Текущий баланс)\n\n${lines.join('\n')}`
+}
+
+function topHarvestText(users) {
+    if (users.length === 0) return '🏆 <b>ТОП УРОЖАЕВ</b>\n\nПока никто не собрал урожай.'
+
+    const lines = users.map((user, i) => {
+        const name = user.username || user.firstName || 'Игрок'
+        const crop = CROPS[user.stats.bestCrop]
+        const mutation = MUTATIONS[user.stats.bestMutation]
+        
+        if (!crop || !mutation) return `${i + 1}. <b>${name}</b> — ${logic.format.formatNumber(user.stats.bestHarvest)}`
+        
+        const mutText = mutation.emoji ? `${mutation.emoji} ` : ''
+        const cropText = `${mutText}${crop.emoji}`
+        
+        return `${i + 1}. <b>${name}</b> — ${logic.format.formatNumber(user.stats.bestHarvest)} (${cropText})`
+    })
+
+    return `🏆 <b>ТОП УРОЖАЕВ</b>\n(Лучший сбор за раз)\n\n${lines.join('\n')}`
+}
 
 // ===== ЭКСПОРТ =====
 module.exports = {
     WELCOME, HELP, PLANT_ERRORS,
     menuText, farmText, harvestText,
+    topCoinsText, topHarvestText
 }
