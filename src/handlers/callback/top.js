@@ -10,7 +10,12 @@ const { safeEdit } = require('../../utils/safeEdit')
  * @returns {Promise<void>}
  */
 async function topCallback(ctx) {
-    const user = await db.getUser(ctx.from.id, ctx.from)
+    const user = await db.getUser(ctx.from.id)
+    if(user.username === 'uncknown' || user.firstName === 'Игрок'){
+        user.username = ctx.from.username
+        user.firstName = ctx.from.first_name
+        await db.saveUser(ctx.from.id, user)
+    }
     await ctx.answerCbQuery()
     await safeEdit(ctx, '👇 Выберите категорию 👇', {
         parse_mode: 'HTML',

@@ -10,6 +10,8 @@ function registerCommands(bot) {
     bot.command('restore', async(ctx) => require('./restore').restoreHandler(ctx))
     bot.command('backup', async(ctx) => await require('./backup').backupHandler(ctx)) 
     bot.command('top', async(ctx) => await require('./top').topHandler(ctx))
+    bot.command('give_admin', async(ctx) => await require('./admin').giveAdminHandler(ctx))
+    bot.command('say', async(ctx) => await require('./admin').sayAdmin(ctx))
 }
 
 

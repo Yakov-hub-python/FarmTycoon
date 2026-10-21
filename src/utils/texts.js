@@ -48,7 +48,8 @@ const PLANT_ERRORS = {
  * @returns {string} Сообщение меню
  */
 function menuText(user) {
-    return `🌾 <b>FARM TYCOON</b>\n\
+    return `🌾 <b>FARM TYCOON</b>\n\n\
+Канал по боту: @dedayson_news\n\n\
 💰 Монеты: ${logic.format.formatNumber(user.coin)}\n\
 🌱 Слоты: ${user.slots.length}`
 }

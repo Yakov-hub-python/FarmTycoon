@@ -17,8 +17,8 @@ function _slotLabel(i, slot) {
     if (!crop) return `🌱 Слот ${i + 1}: пусто`
 
     const left = logic.time.timeLeft(slot)
-    if (left > 0) return `${crop.emoji} Слот ${i + 1}: ${logic.format.formatTime(left)}`
-    return `✅ Собрать ${crop.emoji} (${i + 1})`
+    if (left > 0) return `${crop.emoji}: ${logic.format.formatTime(left)}`
+    return `✅ Собрать ${crop.emoji}`
 }
 
 

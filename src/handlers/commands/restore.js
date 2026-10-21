@@ -1,15 +1,7 @@
 const fs = require('fs/promises')
 const axios = require('axios')
 const { ADMIN_ID, DB_PATH } = require('../../service/config')
-
-/**
- * Проверяет, что команду вызвал админ.
- * @param {Object} ctx
- * @returns {boolean}
- */
-function isAdmin(ctx) {
-    return ctx.from.id.toString() === ADMIN_ID
-}
+const { isAdmin } = require('../../utils/isAdmin')
 
 async function restoreHandler(ctx) {
     if (!isAdmin(ctx)) {

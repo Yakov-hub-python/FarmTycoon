@@ -1,6 +1,7 @@
 const fs = require('fs/promises')
+const fsSync = require('fs')
+const axios = require('axios')
 const { ADMIN_ID, DB_PATH } = require('../../service/config')
-
 
 /**
  * Проверяет, что команду вызвал админ.
@@ -11,12 +12,8 @@ function isAdmin(ctx) {
     return ctx.from.id.toString() === ADMIN_ID
 }
 
-
 /**
  * Команда /backup — отправляет database.json админу в личку.
- * Доступна только админу.
- *
- * @param {Object} ctx
  */
 async function backupHandler(ctx) {
     if (!isAdmin(ctx)) {
@@ -49,7 +46,8 @@ async function backupHandler(ctx) {
     try {
         await ctx.replyWithDocument(
             {
-                source: Buffer.from(raw, 'utf-8'),
+                // Используем поток чтения для надежности
+                source: fsSync.createReadStream(DB_PATH),
                 filename,
             },
             {
@@ -61,13 +59,11 @@ async function backupHandler(ctx) {
                 parse_mode: 'HTML',
             }
         )
-        console.log(`✅ [BACKUP] Отправлен: ${filename} (${userCount} юзеров, ${raw.length} байт)`)
+        console.log(`✅ [BACKUP] Отправлен: ${filename} (${userCount} юзеров)`)
     } catch (e) {
         console.error(`❌ [BACKUP] Ошибка отправки:`, e.message)
-        await ctx.reply('❌ Не удалось отправить файл, попробуй позже')
+        await ctx.reply(`❌ Не удалось отправить файл: ${e.message}`)
     }
 }
-
-
 
 module.exports = { backupHandler }

@@ -6,7 +6,6 @@ const kb = require('../../utils/keyboards')
  * @returns {Promise<void>}
  */
 async function topHandler(ctx) {
-    await ctx.answerCbQuery()
     await safeEdit(ctx, '👇 Выберите категорию 👇', {
         parse_mode: 'HTML',
         ...kb.topsKb(),

@@ -216,7 +216,7 @@ Farm Tycoon — это игра про **терпение и правильны�
 
 ### Стек
 
-- **Node.js 20+**
+- **Node.js 18.x**
 - **Telegraf 4.x** — Telegram Bot API
 - **JSON-файл** `database.json` — без СУБД, всё в одном файле
 - **Render** — хостинг (free tier)
