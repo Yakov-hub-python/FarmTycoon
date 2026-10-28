@@ -24,13 +24,18 @@ function plant(user, cropKey) {
     return { ok: true, slot: index, crop: cropKey }
 }
 
-// ===== СБОР =====
 
+// ===== СЛУЧАЙНЫЙ ВЕС =====
+function rollWeight(cropKey){
+    const crop = CROPS[cropKey]
+    return +(Math.random() * (crop.maxWeightKG - crop.minWeightKG) + crop.minWeightKG).toFixed(2);
+}
+// ===== СБОР =====
 /**
  * Сбор урожая с одного слота.
  * @param {Object} user
  * @param {number} index
- * @returns {{ok: boolean, error?: string, left?: number, item?: {crop: string, mutation: string, reward: number}}}
+ * @returns {{ok: boolean, error?: string, left?: number, item?: {crop: string, mutation: string, reward: number, weight: number}}}
  */
 function harvestSlot(user, index) {
     if (index < 0 || index >= user.slots.length) {
@@ -43,12 +48,14 @@ function harvestSlot(user, index) {
     const left = time.timeLeft(slot)
     if (left > 0) return { ok: false, error: 'not_ready', left }
 
+    const weight = rollWeight(slot.crop)
     const mutation = mutations.rollMutation()
-    const reward = mutations.rewardForMutation(slot.crop, mutation)
+    const reward = mutations.rewardForMutation(slot.crop, mutation, weight)
     if(!user.stats) user.stats = { bestHarvest: 0, bestCrop: null, bestMutation: null }
     if (reward > user.stats.bestHarvest || 0) {
         user.stats.bestHarvest = reward
         user.stats.bestCrop = slot.crop
+        user.stats.bestWeight = weight
         user.stats.bestMutation = mutation
     }
     user.coin += reward
@@ -56,7 +63,7 @@ function harvestSlot(user, index) {
 
     return {
         ok: true,
-        item: { crop: slot.crop, mutation, reward },
+        item: { crop: slot.crop, mutation, reward, weight },
     }
 }
 

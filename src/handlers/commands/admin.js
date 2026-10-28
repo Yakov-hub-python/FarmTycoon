@@ -49,7 +49,7 @@ async function giveAdminHandler(ctx) {
 }
 
 async function sayAdmin(ctx){
-    if(!sAdmin(ctx)) return 
+    if(!isAdmin(ctx)) return 
     const text = ctx.message.text.split(' ').slice(1).join(' ')
     if(!text){return ctx.reply('Введите по этому примеру:\n\n`/say <текст>`', {parse_mode: 'Markdown'})}
     const users = db.getAllUsers()

@@ -21,7 +21,8 @@ function _newUser(userId) {
         stats: {
             bestHarvest: 0,
             bestCrop: null,
-            bestMutation: null
+            bestMutation: null,
+            bestWeight: 0,
         },
     }
 }
@@ -157,7 +158,10 @@ function normalizeUser(user, userId) {
             changed = true
         }
     }
-
+    if (!Number.isInteger(user.stats.bestWeight) || user.stats.bestWeight < 0){
+        user.stats.bestWeight = 0
+        changed = true
+    }
     return changed
 }
 

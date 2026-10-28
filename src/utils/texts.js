@@ -75,55 +75,47 @@ function farmText(user) {
 }
 
 /**
- * Текст экрана «✅ СОБРАНО!». Показывается после сбора одного слота
- * или после «Собрать всё».
- *
- * @param {[{ crop: string, mutation: string, reward: number }]} items массив { crop, mutation, reward }
- * @param {number} balance текущий coin юзера
- * @returns {string}
+ * Текст экрана «✅ СОБРАНО!».
  */
 function harvestText(items, balance) {
-    // 1. Группируем items по ключу "crop:mutation"
     const groups = {}
 
     for (const item of items) {
         const key = `${item.crop}:${item.mutation}`
         if (!groups[key]) {
-            groups[key] = { crop: item.crop, mutation: item.mutation, count: 0, sum: 0 }
+            groups[key] = { crop: item.crop, mutation: item.mutation, count: 0, sum: 0, weight: 0 }
         }
         groups[key].count++
         groups[key].sum += item.reward
+        groups[key].weight += item.weight // 👈 Суммируем вес
     }
 
-    // 2. Сортируем: сначала по редкости (MUTATION_RANK), потом по порядку культур (CROP_ORDER)
     const sorted = Object.values(groups).sort((a, b) => {
         const rankDiff = MUTATION_RANK[a.mutation] - MUTATION_RANK[b.mutation]
         if (rankDiff !== 0) return rankDiff
         return CROP_ORDER.indexOf(a.crop) - CROP_ORDER.indexOf(b.crop)
     })
 
-    // 3. Собираем строки для каждой группы
     const lines = sorted.map(g => {
         const crop = CROPS[g.crop]
         const mut = MUTATIONS[g.mutation]
+        
+        // Округляем общий вес группы до 1 знака (например, 12.5)
+        const weightStr = g.weight.toFixed(1)
 
         if (g.mutation === 'common') {
-            return `${crop.emoji} ${crop.name} ×${g.count}`
+            return `${crop.emoji} ${crop.name} ×${g.count} (${weightStr} кг)`
         }
-        return `${mut.emoji} ${mut.name} ${crop.emoji} ×${g.count} (+${logic.format.formatNumber(g.sum)})`
+        return `${mut.emoji} ${mut.name} ${crop.emoji} ×${g.count} (${weightStr} кг) (+${logic.format.formatNumber(g.sum)})`
     })
 
-    // 4. Считаем общую сумму
     const total = items.reduce((sum, it) => sum + it.reward, 0)
 
-    // 5. Финальный текст
     const parts = ['✅ <b>СОБРАНО!</b>']
-
     if (lines.length > 0) {
         parts.push('')
         parts.push(...lines)
     }
-
     parts.push('')
     parts.push(`💰 Получено: ${logic.format.formatNumber(total)} монет`)
     parts.push(`💼 Баланс: ${logic.format.formatNumber(balance)}`)
@@ -142,6 +134,9 @@ function topCoinsText(users) {
     return `💰 <b>ТОП БОГАЧЕЙ</b>\n(Текущий баланс)\n\n${lines.join('\n')}`
 }
 
+/**
+ * Текст экрана «ТОП УРОЖАЕВ».
+ */
 function topHarvestText(users) {
     if (users.length === 0) return '🏆 <b>ТОП УРОЖАЕВ</b>\n\nПока никто не собрал урожай.'
 
@@ -154,8 +149,10 @@ function topHarvestText(users) {
         
         const mutText = mutation.emoji ? `${mutation.emoji} ` : ''
         const cropText = `${mutText}${crop.emoji}`
+        const weightText = user.stats.bestWeight ? ` ${user.stats.bestWeight.toFixed(1)} кг` : ''
         
-        return `${i + 1}. <b>${name}</b> — ${logic.format.formatNumber(user.stats.bestHarvest)} (${cropText})`
+        // 👇 Добавили weightText
+        return `${i + 1}. <b>${name}</b> — ${logic.format.formatNumber(user.stats.bestHarvest)} (${cropText}${weightText})`
     })
 
     return `🏆 <b>ТОП УРОЖАЕВ</b>\n(Лучший сбор за раз)\n\n${lines.join('\n')}`

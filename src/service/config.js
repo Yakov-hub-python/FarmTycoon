@@ -18,18 +18,19 @@ const SLOT_MAX_COUNT = 16
 // ===== КУЛЬТУРЫ =====
 const CROPS = {
     'wheat': { 
-        name: 'Пшеница', emoji: '🌾', growTime: 15, seed: 100, sell: 120 
+        name: 'Пшеница', emoji: '🌾', growTime: 15, seed: 100, minWeightKG: 5, maxWeightKG: 15, pricePerKG: 12
     },
     'carrot': { 
-        name: 'Морковь', emoji: '🥕', growTime: 90, seed: 500, sell: 600
+        name: 'Морковь', emoji: '🥕', growTime: 90, seed: 500, minWeightKG: 25, maxWeightKG: 75, pricePerKG: 12
     },
     'pumpkin': { 
-        name: 'Тыква',   emoji: '🎃', growTime: 450,  seed: 3000,  sell: 3600 
+        name: 'Тыква', emoji: '🎃', growTime: 450, seed: 3000, minWeightKG: 30, maxWeightKG: 90, pricePerKG: 60
     },
     'watermelon': { 
-        name: 'Арбуз',   emoji: '🍉', growTime: 1800, seed: 20000, sell: 24000 
+        name: 'Арбуз', emoji: '🍉', growTime: 1800, seed: 20000, minWeightKG: 1500, maxWeightKG: 4500, pricePerKG: 8
     }
 }
+
 
 const CROP_ORDER = ['wheat', 'carrot', 'pumpkin', 'watermelon']
 

@@ -19,15 +19,16 @@ function rollMutation() {
 
 /**
  * Награда за культуру с учётом мутации.
- * @param {string} cropKey
+ * @param {number} cost
  * @param {string} mutation
  * @returns {number}
  * @throws {Error} Если cropKey или mutation неизвестны
  */
-function rewardForMutation(cropKey, mutation) {
-    if (!CROPS[cropKey]) throw new Error(`Неизвестное cropKey: ${cropKey}`)
-    if (!MUTATIONS[mutation]) throw new Error(`Неизвестное mutation: ${mutation}`)
-    return Math.round(CROPS[cropKey].sell * MUTATIONS[mutation].mult)
+function rewardForMutation(cropKey, mutation, weight) {
+    if (!MUTATIONS[mutation]) throw new Error(`Unknown mutation: ${mutation}`)
+    const mult = MUTATIONS[mutation].mult
+    const crop = CROPS[cropKey]
+    return Math.round((crop.pricePerKG * weight) * mult)
 }
 
 module.exports = {

@@ -1,4 +1,5 @@
 const kb = require('../../utils/keyboards')
+const { safeEdit } = require('../../utils/safeEdit')
 
 /**
  * Обработчик команды "/top".
