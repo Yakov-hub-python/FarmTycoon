@@ -15,6 +15,7 @@ function _newUser(userId) {
         id: userId,
         username: 'unknown',
         firstName: 'Игрок',
+        nickname: null,
         createdAt: Math.floor(Date.now() / 1000),
         coin: START_COINS,
         slots: Array(START_SLOTS).fill(null),
@@ -79,6 +80,17 @@ async function _writeDb(data) {
 }
 
 
+// ===== ОЧЕРЕДЬ ЗАПИСИ (мьютекс) =====
+// get/save = read -> modify -> write. Без очереди два параллельных вызова
+// (например, /setnick и сбор урожая) затирают изменения друг друга.
+let _queue = Promise.resolve()
+function _withLock(fn) {
+    const run = _queue.then(fn, fn)
+    _queue = run.catch(() => {})
+    return run
+}
+
+
 /**
  * Чинит поля юзера, если они побились. Меняет user in-place.
  *
@@ -101,6 +113,12 @@ function normalizeUser(user, userId) {
 
     if (typeof user.firstName !== 'string' || !user.firstName) {
         user.firstName = 'Игрок'
+        changed = true
+    }
+
+    // nickname: либо null, либо непустая строка. null — валидное состояние.
+    if (user.nickname !== null && (typeof user.nickname !== 'string' || !user.nickname)) {
+        user.nickname = null
         changed = true
     }
 
@@ -149,19 +167,23 @@ function normalizeUser(user, userId) {
             user.slots[i] = null
             changed = true
         }
-        if (!user.stats || typeof user.stats !== 'object' || Array.isArray(user.stats)) {
-            user.stats = { bestHarvest: 0, bestCrop: null, bestMutation: null }
-            changed = true
-        }
-        if (!Number.isInteger(user.stats.bestHarvest)) {
-            user.stats.bestHarvest = 0
-            changed = true
-        }
     }
-    if (!Number.isInteger(user.stats.bestWeight) || user.stats.bestWeight < 0){
+
+    // stats — ВНЕ цикла по слотам (иначе для пустых слотов не проверяется)
+    if (!user.stats || typeof user.stats !== 'object' || Array.isArray(user.stats)) {
+        user.stats = { bestHarvest: 0, bestCrop: null, bestMutation: null, bestWeight: 0 }
+        changed = true
+    }
+    if (!Number.isInteger(user.stats.bestHarvest) || user.stats.bestHarvest < 0) {
+        user.stats.bestHarvest = 0
+        changed = true
+    }
+    // bestWeight — дробный (кг), Number.isInteger тут НЕЛЬЗЯ, иначе вес обнуляется
+    if (typeof user.stats.bestWeight !== 'number' || !isFinite(user.stats.bestWeight) || user.stats.bestWeight < 0) {
         user.stats.bestWeight = 0
         changed = true
     }
+
     return changed
 }
 
@@ -174,20 +196,22 @@ function normalizeUser(user, userId) {
  */
 async function getUser(userId) {
     userId = String(userId)
-    const db = await _readDb()
-    let user = db.users[userId]
+    return _withLock(async () => {
+        const db = await _readDb()
+        let user = db.users[userId]
 
-    if (!user) {
-        user = _newUser(userId)
-        db.users[userId] = user
-        await _writeDb(db)
+        if (!user) {
+            user = _newUser(userId)
+            db.users[userId] = user
+            await _writeDb(db)
+            return user
+        }
+
+        if (normalizeUser(user, userId)) {
+            await _writeDb(db)
+        }
         return user
-    }
-
-    if (normalizeUser(user, userId)) {
-        await _writeDb(db)
-    }
-    return user
+    })
 }
 
 
@@ -200,11 +224,12 @@ async function getUser(userId) {
  */
 async function saveUser(userId, user) {
     userId = String(userId)
-    normalizeUser(user, userId)
-
-    const db = await _readDb()
-    db.users[userId] = user
-    await _writeDb(db)
+    return _withLock(async () => {
+        normalizeUser(user, userId)
+        const db = await _readDb()
+        db.users[userId] = user
+        await _writeDb(db)
+    })
 }
 
 /**

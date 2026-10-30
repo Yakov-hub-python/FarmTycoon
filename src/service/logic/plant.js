@@ -26,10 +26,11 @@ function plant(user, cropKey) {
 
 
 // ===== СЛУЧАЙНЫЙ ВЕС =====
-function rollWeight(cropKey){
+function rollWeight(cropKey) {
     const crop = CROPS[cropKey]
-    return +(Math.random() * (crop.maxWeightKG - crop.minWeightKG) + crop.minWeightKG).toFixed(2);
+    return +(Math.random() * (crop.maxWeightKG - crop.minWeightKG) + crop.minWeightKG).toFixed(2)
 }
+
 // ===== СБОР =====
 /**
  * Сбор урожая с одного слота.
@@ -51,13 +52,20 @@ function harvestSlot(user, index) {
     const weight = rollWeight(slot.crop)
     const mutation = mutations.rollMutation()
     const reward = mutations.rewardForMutation(slot.crop, mutation, weight)
-    if(!user.stats) user.stats = { bestHarvest: 0, bestCrop: null, bestMutation: null }
-    if (reward > user.stats.bestHarvest || 0) {
+
+    if (!user.stats) {
+        user.stats = { bestHarvest: 0, bestCrop: null, bestMutation: null, bestWeight: 0 }
+    }
+
+    // Лучший сбор — по награде. Вес пишем вместе с культурой/мутацией,
+    // чтобы в топе вес соответствовал именно лучшему сбору.
+    if (reward > (user.stats.bestHarvest || 0)) {
         user.stats.bestHarvest = reward
         user.stats.bestCrop = slot.crop
-        user.stats.bestWeight = weight
         user.stats.bestMutation = mutation
+        user.stats.bestWeight = weight
     }
+
     user.coin += reward
     user.slots[index] = null
 
@@ -70,7 +78,7 @@ function harvestSlot(user, index) {
 /**
  * Сбор со всех готовых слотов.
  * @param {Object} user
- * @returns {Array<{crop: string, mutation: string, reward: number}>}
+ * @returns {Array<{crop: string, mutation: string, reward: number, weight: number}>}
  */
 function harvestAll(user) {
     const items = []
@@ -82,5 +90,5 @@ function harvestAll(user) {
 }
 
 module.exports = {
-    plant, harvestSlot, harvestAll
+    plant, harvestSlot, harvestAll,
 }

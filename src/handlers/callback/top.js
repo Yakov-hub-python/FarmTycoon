@@ -11,9 +11,10 @@ const { safeEdit } = require('../../utils/safeEdit')
  */
 async function topCallback(ctx) {
     const user = await db.getUser(ctx.from.id)
-    if(user.username === 'uncknown' || user.firstName === 'Игрок'){
-        user.username = ctx.from.username
-        user.firstName = ctx.from.first_name
+    // 'unknown' (а не 'uncknown'), firstName (camelCase)
+    if (user.username === 'unknown' || user.username === 'uncknown' || user.firstName === 'Игрок') {
+        if (ctx.from.username) user.username = ctx.from.username
+        if (ctx.from.first_name) user.firstName = ctx.from.first_name
         await db.saveUser(ctx.from.id, user)
     }
     await ctx.answerCbQuery()
@@ -30,7 +31,7 @@ async function topCallback(ctx) {
  */
 async function topCoinsCallback(ctx) {
     const users = await db.getAllUsers()
-    const topUsers = await logic.top.getTopCoins(users)
+    const topUsers = logic.top.getTopCoins(users)
     await ctx.answerCbQuery()
     await safeEdit(ctx, texts.topCoinsText(topUsers), {
         parse_mode: 'HTML',
@@ -45,7 +46,7 @@ async function topCoinsCallback(ctx) {
  */
 async function topHarvestCallback(ctx) {
     const users = await db.getAllUsers()
-    const topUsers = await logic.top.getTopHarvest(users)
+    const topUsers = logic.top.getTopHarvest(users)
     await ctx.answerCbQuery()
     await safeEdit(ctx, texts.topHarvestText(topUsers), {
         parse_mode: 'HTML',
@@ -56,5 +57,5 @@ async function topHarvestCallback(ctx) {
 module.exports = {
     topCallback,
     topCoinsCallback,
-    topHarvestCallback
+    topHarvestCallback,
 }
