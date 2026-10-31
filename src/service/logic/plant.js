@@ -3,7 +3,6 @@ const time = require('./time')
 const mutations = require('./mutations')
 
 // ===== ПОСАДКА =====
-
 /**
  * Покупка и посадка растения в первый свободный слот.
  * @param {Object} user

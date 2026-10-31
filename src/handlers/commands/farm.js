@@ -5,9 +5,8 @@ const kb = require('../../utils/keyboards')
 
 async function farmHandler(ctx) {
     const user = await db.getUser(ctx.from.id)
-    if( user.username === 'unknown' || user.first_name !== ctx.from.first_name) {
+    if( user.username === 'unknown') {
         user.username = ctx.from.username || 'unknown'
-        user.firstName = ctx.from.first_name || 'unknown'
         await db.saveUser(ctx.from.id, user)
     }
     await ctx.reply(texts.farmText(user), {

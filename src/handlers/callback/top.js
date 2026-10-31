@@ -12,9 +12,8 @@ const { safeEdit } = require('../../utils/safeEdit')
 async function topCallback(ctx) {
     const user = await db.getUser(ctx.from.id)
     // 'unknown' (а не 'uncknown'), firstName (camelCase)
-    if (user.username === 'unknown' || user.username === 'uncknown' || user.firstName === 'Игрок') {
+    if (user.username === 'unknown' || user.username === 'uncknown') {
         if (ctx.from.username) user.username = ctx.from.username
-        if (ctx.from.first_name) user.firstName = ctx.from.first_name
         await db.saveUser(ctx.from.id, user)
     }
     await ctx.answerCbQuery()

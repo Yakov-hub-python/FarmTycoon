@@ -2,16 +2,19 @@ const db = require('../../service/db')
 const { escapeHtml } = require('../../utils/texts')
 
 async function setNick(ctx) {
-    // /setnick Вася -> "Вася". ctx.match — массив, .trim() на нём падает.
-    const nickname = ctx.payload?.trim();
+    const raw = ctx.payload ?? '';
+    const nickname = raw.trim().replace(/\s+/g, ' ');
 
     if (!nickname) {
-        return ctx.reply('Использование: /setnick НовыйНик');
+        return ctx.reply('Использование: /setnick Новый Ник');
     }
     if (nickname.length < 2 || nickname.length > 32) {
         return ctx.reply('Ник должен быть от 2 до 32 символов');
     }
-    if (['uncknown', 'unknown', 'Игрок'].includes(nickname)) {
+    if (nickname.split(' ').length > 3) {
+        return ctx.reply('Не больше 3 слов в нике');
+    }
+    if (['uncknown', 'unknown'].includes(nickname)) {
         return ctx.reply('Этот ник зарезервирован');
     }
 
@@ -31,5 +34,6 @@ async function setNick(ctx) {
 
     return ctx.reply(`Ник изменён: ${escapeHtml(nickname)}`, { parse_mode: 'HTML' });
 }
+
 
 module.exports = { setNick }

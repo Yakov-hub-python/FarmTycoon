@@ -14,11 +14,11 @@ function _newUser(userId) {
     return {
         id: userId,
         username: 'unknown',
-        firstName: 'Игрок',
-        nickname: null,
+        nickname: 'Игрок',
         createdAt: Math.floor(Date.now() / 1000),
         coin: START_COINS,
         slots: Array(START_SLOTS).fill(null),
+        last_collection: 0,
         stats: {
             bestHarvest: 0,
             bestCrop: null,
@@ -111,14 +111,8 @@ function normalizeUser(user, userId) {
         changed = true
     }
 
-    if (typeof user.firstName !== 'string' || !user.firstName) {
-        user.firstName = 'Игрок'
-        changed = true
-    }
-
-    // nickname: либо null, либо непустая строка. null — валидное состояние.
-    if (user.nickname !== null && (typeof user.nickname !== 'string' || !user.nickname)) {
-        user.nickname = null
+    if (typeof user.nickname !== 'string' || !user.nickname || user.nickname.split(' ').length > 3) {
+        user.nickname = 'Игрок'
         changed = true
     }
 
@@ -168,8 +162,10 @@ function normalizeUser(user, userId) {
             changed = true
         }
     }
-
-    // stats — ВНЕ цикла по слотам (иначе для пустых слотов не проверяется)
+    if (!Number.isInteger(user.last_collection) || user.last_collection < 0 || !user.last_collection){
+        user.last_collection = 0
+        changed = true
+    }
     if (!user.stats || typeof user.stats !== 'object' || Array.isArray(user.stats)) {
         user.stats = { bestHarvest: 0, bestCrop: null, bestMutation: null, bestWeight: 0 }
         changed = true
@@ -178,7 +174,6 @@ function normalizeUser(user, userId) {
         user.stats.bestHarvest = 0
         changed = true
     }
-    // bestWeight — дробный (кг), Number.isInteger тут НЕЛЬЗЯ, иначе вес обнуляется
     if (typeof user.stats.bestWeight !== 'number' || !isFinite(user.stats.bestWeight) || user.stats.bestWeight < 0) {
         user.stats.bestWeight = 0
         changed = true

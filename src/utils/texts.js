@@ -4,8 +4,6 @@ const { CROPS, CROP_ORDER, MUTATIONS, MUTATION_RANK } = require('../service/conf
 
 
 // ===== ЭКРАНИРОВАНИЕ HTML =====
-// Telegram с parse_mode:'HTML' отклоняет сообщение с 400, если в тексте есть
-// <, > или & (например, ник "Tom & Jerry"). Всегда прогоняем пользовательский текст.
 function escapeHtml(s) {
     return String(s ?? '')
         .replace(/&/g, '&amp;')
@@ -13,14 +11,12 @@ function escapeHtml(s) {
         .replace(/>/g, '&gt;')
 }
 
-// Имя для вывода: nickname → username → firstName → "Игрок"
 function displayName(user) {
-    if (user.nickname) return escapeHtml(user.nickname)
+    if (user.nickname && user.username !== 'Игрок') return escapeHtml(user.nickname);
     if (user.username && user.username !== 'unknown' && user.username !== 'uncknown') {
-        return escapeHtml(user.username)
+        return escapeHtml(user.username);
     }
-    if (user.firstName && user.firstName !== 'Игрок') return escapeHtml(user.firstName)
-    return 'Игрок'
+    return 'Игрок';
 }
 
 

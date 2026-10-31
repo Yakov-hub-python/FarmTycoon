@@ -13,6 +13,7 @@ function registerCallbacks(bot) {
     bot.action('top', async(ctx) => require('./top').topCallback(ctx))
     bot.action('top_coins', async(ctx) => require('./top').topCoinsCallback(ctx))
     bot.action('top_harvest', async(ctx) => require('./top').topHarvestCallback(ctx))
+    bot.action('daily', async(ctx) => require('./daily').dailyCallback(ctx) )
 }
 
 

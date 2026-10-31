@@ -29,8 +29,8 @@ function _slotLabel(i, slot) {
 function mainMenuKb() {
     return Markup.inlineKeyboard([
         [Markup.button.callback('🌾 Открыть ферму', 'farm')],
-        [Markup.button.callback('🏆 ТОП', 'top')],
-        [Markup.button.callback('ℹ️ Помощь', 'help')],
+        [Markup.button.callback('🏆 ТОП', 'top'), Markup.button.callback('ℹ️ Помощь', 'help')],
+        [Markup.button.callback('📅 Ежедневная награда', 'daily')],
     ])
 }
 
