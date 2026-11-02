@@ -12,6 +12,7 @@ function registerCommands(bot) {
     bot.command('top', async(ctx) => await require('./top').topHandler(ctx))
     bot.command('give_admin', async(ctx) => await require('./admin').giveAdminHandler(ctx))
     bot.command('say', async(ctx) => await require('./admin').sayAdmin(ctx))
+    bot.command('reset_stats', async(ctx) => await require('./admin').resetStatsHandler(ctx))
     bot.command('setnick', async(ctx) => await require('./setnick').setNick(ctx))
     bot.command('me', async (ctx) => await require('./me').meHandler(ctx))
     bot.command('daily', async (ctx) => await require('./daily').dailyHandler(ctx))

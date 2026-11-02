@@ -17,22 +17,56 @@ const SLOT_MAX_COUNT = 16
 
 // ===== КУЛЬТУРЫ =====
 const CROPS = {
-    'wheat': { 
-        name: 'Пшеница', emoji: '🌾', growTime: 15, seed: 100, minWeightKG: 5, maxWeightKG: 15, pricePerKG: 12
+    'wheat': {
+        name: 'Пшеница', emoji: '🌾', growTime: 15, seed: 100,
+        minWeightKG: 1.0, maxWeightKG: 3.0, pricePerKG: 60
     },
-    'carrot': { 
-        name: 'Морковь', emoji: '🥕', growTime: 90, seed: 500, minWeightKG: 25, maxWeightKG: 75, pricePerKG: 12
+    'cucumber': {
+        name: 'Огурец', emoji: '🥒', growTime: 30, seed: 250,
+        minWeightKG: 1.5, maxWeightKG: 3.5, pricePerKG: 120
     },
-    'pumpkin': { 
-        name: 'Тыква', emoji: '🎃', growTime: 450, seed: 3000, minWeightKG: 30, maxWeightKG: 90, pricePerKG: 60
+    'carrot': {
+        name: 'Морковь', emoji: '🥕', growTime: 90, seed: 500,
+        minWeightKG: 2.0, maxWeightKG: 5.0, pricePerKG: 170
     },
-    'watermelon': { 
-        name: 'Арбуз', emoji: '🍉', growTime: 1800, seed: 20000, minWeightKG: 1500, maxWeightKG: 4500, pricePerKG: 8
+    'strawberry': {
+        name: 'Клубника', emoji: '🍓', growTime: 300, seed: 1500,
+        minWeightKG: 0.5, maxWeightKG: 2.5, pricePerKG: 1200
+    },
+    'pumpkin': {
+        name: 'Тыква', emoji: '🎃', growTime: 450, seed: 3000,
+        minWeightKG: 5.0, maxWeightKG: 15.0, pricePerKG: 360
+    },
+    'tomato': {
+        name: 'Помидор', emoji: '🍅', growTime: 900, seed: 8000,
+        minWeightKG: 2.0, maxWeightKG: 6.0, pricePerKG: 2400
+    },
+    'watermelon': {
+        name: 'Арбуз', emoji: '🍉', growTime: 1800, seed: 20000,
+        minWeightKG: 10.0, maxWeightKG: 25.0, pricePerKG: 1370
+    },
+    'grape': {
+        name: 'Виноград', emoji: '🍇', growTime: 7200, seed: 100000,
+        minWeightKG: 5.0, maxWeightKG: 15.0, pricePerKG: 12000
+    },
+    'pineapple': {
+        name: 'Ананас', emoji: '🍍', growTime: 14400, seed: 500000,
+        minWeightKG: 10.0, maxWeightKG: 30.0, pricePerKG: 30000
     }
 }
 
-
-const CROP_ORDER = ['wheat', 'carrot', 'pumpkin', 'watermelon']
+// Порядок отображения в магазине (от быстрых к долгим)
+const CROP_ORDER = [
+    'wheat', 
+    'cucumber', 
+    'carrot', 
+    'strawberry', 
+    'pumpkin', 
+    'tomato', 
+    'watermelon', 
+    'grape', 
+    'pineapple'
+]
 
 // ===== МУТАЦИИ =====
 const MUTATIONS = {

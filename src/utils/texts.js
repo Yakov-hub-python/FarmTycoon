@@ -2,7 +2,6 @@
 const logic = require('../service/logic')
 const { CROPS, CROP_ORDER, MUTATIONS, MUTATION_RANK } = require('../service/config')
 
-
 // ===== ЭКРАНИРОВАНИЕ HTML =====
 function escapeHtml(s) {
     return String(s ?? '')
@@ -19,36 +18,32 @@ function displayName(user) {
     return 'Игрок';
 }
 
+// ===== КОНСТАНТЫ =====
+const WELCOME = '🌾 <b>FARM TYCOON</b>\n\n' +
+    'Добро пожаловать на твою ферму!\n' +
+    'Сажай семена, собирай урожай, лови золотые мутации и богатей.\n\n' +
+    '👇 Жми кнопку ниже, чтобы начать:'
 
-/**
- * Текст сообщения "Cтарт", использует HTML-разметку
- */
-const WELCOME = '🌾 <b>FARM TYCOON</b>\n\nСажай семена, собирай урожай, расширяй поле. ' +
-    'Иногда урожай мутирует\n\nЖми «Открыть ферму»'
-
-
-/**
- * Текст сообщения "ПОМОЩЬ", использует HTML-разметку
- */
-const HELP = 'ℹ️ <b>ПОМОЩЬ</b>\n\n' +
-    '<b>Петля игры</b>\n\n' +
-    'Посадил → выросло → собрал → монеты → купил семена → ...\n\n' +
-    '<b>Культуры</b>\n\n' +
-    '🌾 Пшеница — 15 сек · семя 100 · продажа 120\n' +
-    '🥕 Морковь — 1.5 мин · семя 500 · продажа 600\n' +
-    '🎃 Тыква — 7.5 мин · семя 3.000 · продажа 3.600\n' +
-    '🍉 Арбуз — 30 мин · семя 20.000 · продажа 24.000\n\n' +
-    '<b>Мутации</b>\n\n' +
+const HELP = 'ℹ️ <b>СПРАВКА</b>\n\n' +
+    '<b>Культуры</b>\n' +
+    '🌾 Пшеница — 15 сек (100)\n' +
+    '🥒 Огурец — 30 сек (250)\n' +
+    '🥕 Морковь — 1.5 мин (500)\n' +
+    '🍓 Клубника — 5 мин (1.500)\n' +
+    '🎃 Тыква — 7.5 мин (3.000)\n' +
+    '🍅 Помидор — 15 мин (8.000)\n' +
+    '🍉 Арбуз — 30 мин (20.000)\n' +
+    '🍇 Виноград — 2 часа (100.000)\n' +
+    '🍍 Ананас — 4 часа (500.000)\n\n' +
+    '<b>Мутации</b>\n' +
     'Обычная — 85% (×1)\n' +
     '✨ Серебряная — 12% (×2)\n' +
     '🌟 Золотая — 3% (×6)\n\n' +
-    '<b>Расширение</b>\n\n' +
-    'Слот 9 — 5.000, каждый следующий ×3 дороже.\n\n' +
-    '<b>Команды</b>\n\n' +
-    '/start — регистрация\n' +
+    '<b>Вес</b>\n' +
+    'Чем тяжелее плод, тем больше монет ты получишь!\n\n' +
+    '<b>Команды</b>\n' +
+    '/start — запуск бота\n' +
     '/menu — главное меню\n' +
-    '/farm — ферма\n' +
-    '/setnick — сменить ник\n' +
     '/help — справка'
 
 const PLANT_ERRORS = {
@@ -60,23 +55,21 @@ const PLANT_ERRORS = {
     bad_slot:         '❌ Неверный слот',
 }
 
+// ===== ЭКРАНЫ =====
+
 /**
- * Сообщение меню
- * @param {Object} user
- * @returns {string}
+ * Текст главного меню
  */
 function menuText(user) {
     return `🌾 <b>FARM TYCOON</b>\n\n` +
         `👤 Ник: <b>${displayName(user)}</b>\n` +
-        `Канал по боту: @dedayson_news\n\n` +
-        `💰 Монеты: ${logic.format.formatNumber(user.coin)}\n` +
-        `🌱 Слоты: ${user.slots.length}`
+        `💰 Баланс: <b>${logic.format.formatNumber(user.coin)}</b> монет\n` +
+        `🌱 Слотов: ${user.slots.length}\n\n` +
+        `👇 Выбери действие:`
 }
 
 /**
- * Шапка экрана фермы
- * @param {Object} user
- * @returns {string}
+ * Текст экрана фермы
  */
 function farmText(user) {
     const total = user.slots.length
@@ -88,19 +81,27 @@ function farmText(user) {
             if (logic.time.isReady(user.slots[i])) ready++
         }
     }
-    const head = `🌾 <b>ТВОЯ ФЕРМА</b>\n` +
-        `👤 ${displayName(user)}\n` +
-        `💰 ${logic.format.formatNumber(user.coin)} монет\n` +
-        `Слоты: ${busy}/${total} занято`
-    const tail = ready > 0 ? ` · ✅ готово: ${ready}` : ''
-    return head + tail
+    
+    let status = `🌱 Занято: ${busy}/${total}`
+    if (ready > 0) status += ` · ✅ Готово: ${ready}`
+
+    return `🚜 <b>ТВОЯ ФЕРМА</b>\n\n` +
+        `💰 Баланс: <b>${logic.format.formatNumber(user.coin)}</b> монет\n` +
+        `${status}\n\n` +
+        `👇 Выбери слот или купи семена:`
+}
+
+/**
+ * Текст экрана магазина
+ */
+function shopText(user) {
+    return `🛒 <b>МАГАЗИН СЕМЯН</b>\n\n` +
+        `💰 Баланс: <b>${logic.format.formatNumber(user.coin)}</b> монет\n\n` +
+        `Выбери количество (сверху) и нажми на семя:`
 }
 
 /**
  * Текст экрана «✅ СОБРАНО!».
- * @param {Array<{crop: string, mutation: string, reward: number, weight: number}>} items
- * @param {number} balance
- * @returns {string}
  */
 function harvestText(items, balance) {
     const groups = {}
@@ -142,16 +143,14 @@ function harvestText(items, balance) {
         parts.push(...lines)
     }
     parts.push('')
-    parts.push(`💰 Получено: ${logic.format.formatNumber(total)} монет`)
-    parts.push(`💼 Баланс: ${logic.format.formatNumber(balance)}`)
+    parts.push(`💰 Получено: <b>${logic.format.formatNumber(total)}</b> монет`)
+    parts.push(`💼 Баланс: <b>${logic.format.formatNumber(balance)}</b>`)
 
     return parts.join('\n')
 }
 
 /**
  * Текст экрана «ТОП БОГАЧЕЙ».
- * @param {Array<Object>} users
- * @returns {string}
  */
 function topCoinsText(users) {
     if (users.length === 0) return '💰 <b>ТОП БОГАЧЕЙ</b>\n\nПока пусто.'
@@ -165,8 +164,6 @@ function topCoinsText(users) {
 
 /**
  * Текст экрана «ТОП УРОЖАЕВ».
- * @param {Array<Object>} users
- * @returns {string}
  */
 function topHarvestText(users) {
     if (users.length === 0) return '🏆 <b>ТОП УРОЖАЕВ</b>\n\nПока никто не собрал урожай.'
@@ -194,7 +191,7 @@ function topHarvestText(users) {
 // ===== ЭКСПОРТ =====
 module.exports = {
     WELCOME, HELP, PLANT_ERRORS,
-    menuText, farmText, harvestText,
-    topCoinsText, topHarvestText,
+    menuText, farmText, harvestText, 
+    shopText, topCoinsText, topHarvestText,
     escapeHtml, displayName,
 }

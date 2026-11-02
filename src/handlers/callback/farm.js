@@ -21,32 +21,6 @@ async function farmCallback(ctx) {
 }
 
 
-async function plantCallback(ctx) {
-    const cropKey = ctx.match[1]
-
-    const user = await db.getUser(ctx.from.id)
-    if( user.username === 'unknown') {
-        user.username = ctx.from.username || 'unknown'
-        await db.saveUser(ctx.from.id, user)
-    }
-    const res = logic.plant.plant(user, cropKey)
-
-    if (res.ok) {
-        await db.saveUser(ctx.from.id, user)
-        await ctx.answerCbQuery(
-            `Посажено! Созреет через ${logic.format.formatTime(CROPS[cropKey].growTime)}`
-        )
-    } else {
-        await ctx.answerCbQuery(
-            texts.PLANT_ERRORS[res.error] || 'Ошибка',
-            { show_alert: true }
-        )
-    }
-
-    await renderFarm(ctx, user)
-}
-
-
 async function slotCallback(ctx) {
     const index = parseInt(ctx.match[1], 10)
 
@@ -123,7 +97,6 @@ async function expandCallback(ctx) {
 
 module.exports = {
     farmCallback,
-    plantCallback,
     slotCallback,
     harvestAllCallback,
     expandCallback,

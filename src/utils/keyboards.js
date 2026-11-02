@@ -3,41 +3,37 @@ const { Markup } = require('telegraf')
 const logic = require('../service/logic')
 const { CROPS, CROP_ORDER } = require('../service/config')
 
-
 /**
  * Текст одной кнопки слота.
- * @param {number} i — индекс слота (0-based)
- * @param {Object|null} slot
- * @returns {string}
  */
 function _slotLabel(i, slot) {
     if (slot === null) return `🌱 Слот ${i + 1}: пусто`
-
     const crop = CROPS[slot.crop]
     if (!crop) return `🌱 Слот ${i + 1}: пусто`
-
     const left = logic.time.timeLeft(slot)
     if (left > 0) return `${crop.emoji} ${logic.format.formatTime(left)}`
     return `✅ Собрать ${crop.emoji}`
 }
 
-
 /**
- * Клавиатура главного меню.
- * @returns {Object} Telegraf Markup
+ * Главное меню (Дашборд).
  */
 function mainMenuKb() {
     return Markup.inlineKeyboard([
-        [Markup.button.callback('🌾 Открыть ферму', 'farm')],
-        [Markup.button.callback('🏆 ТОП', 'top'), Markup.button.callback('ℹ️ Помощь', 'help')],
-        [Markup.button.callback('📅 Ежедневная награда', 'daily')],
+        [Markup.button.callback('🌾 Моя ферма', 'farm')],
+        [
+            Markup.button.callback('🛒 Магазин', 'shop'),
+            Markup.button.callback('🏆 Топы', 'top')
+        ],
+        [
+            Markup.button.callback('📅 Бонус', 'daily'),
+            Markup.button.callback('ℹ️ Помощь', 'help')
+        ]
     ])
 }
 
-
 /**
- * Клавиатура «назад в меню». Для экрана /help.
- * @returns {Object} Telegraf Markup
+ * Универсальная кнопка "Назад" (в меню).
  */
 function backKb() {
     return Markup.inlineKeyboard([
@@ -45,10 +41,8 @@ function backKb() {
     ])
 }
 
-
 /**
- * Клавиатура после сбора урожая. Для экрана «✅ СОБРАНО!».
- * @returns {Object} Telegraf Markup
+ * Клавиатура после сбора урожая.
  */
 function afterHarvestKb() {
     return Markup.inlineKeyboard([
@@ -57,23 +51,20 @@ function afterHarvestKb() {
     ])
 }
 
-
 /**
  * Главная клавиатура экрана фермы.
- * @param {Object} user
- * @returns {Object} Telegraf Markup
  */
 function farmKb(user) {
     const rows = []
 
-    // 1. «Собрать всё» — только если есть готовые слоты
+    // 1. Собрать всё (если есть готовые)
     if (user.slots.some(slot => logic.time.isReady(slot))) {
         rows.push([
             Markup.button.callback('🧺 Собрать всё', 'harvest_all'),
         ])
     }
 
-    // 2. Слоты — по 2 в ряд
+    // 2. Слоты (по 2 в ряд)
     const slotBtns = user.slots.map((slot, i) =>
         Markup.button.callback(_slotLabel(i, slot), `slot:${i}`)
     )
@@ -81,32 +72,18 @@ function farmKb(user) {
         rows.push(slotBtns.slice(i, i + 2))
     }
 
-    // 3. Семена — по 2 в ряд, порядок из CROP_ORDER
-    const seedBtns = CROP_ORDER.map(key => {
-        const crop = CROPS[key]
-        return Markup.button.callback(
-            `${crop.emoji} ${logic.format.formatNumber(crop.seed)}`,
-            `plant:${key}`
-        )
-    })
-    for (let i = 0; i < seedBtns.length; i += 2) {
-        rows.push(seedBtns.slice(i, i + 2))
-    }
-
-    // 4. Расширение
+    // 3. Магазин и Расширение
     rows.push([
-        Markup.button.callback(
-            `🟫 Расширить — ${logic.format.formatNumber(logic.expansion.nextSlotPrice(user))}`,
-            'expand'
-        ),
+        Markup.button.callback('🛒 Магазин', 'shop'),
+        Markup.button.callback(`🟫 Расширить (${logic.format.formatNumber(logic.expansion.nextSlotPrice(user))})`, 'expand')
     ])
 
-    // 5. Обновить
+    // 4. Обновить
     rows.push([
         Markup.button.callback('🔄 Обновить', 'farm'),
     ])
 
-    // 6. В меню
+    // 5. В меню
     rows.push([
         Markup.button.callback('⬅️ В меню', 'menu'),
     ])
@@ -115,10 +92,46 @@ function farmKb(user) {
 }
 
 /**
- * Клавиатура экрана ТОП.
- * @returns {Object} Telegraf Markup
+ * Клавиатура магазина.
  */
-function topsKb(){
+function shopKb(count = 1) {
+    const rows = []
+
+    // Кнопки количества (с галочкой)
+    const options = [1, 2, 5, 10]
+    const countBtns = options.map(opt => {
+        const text = (opt === count) ? `✅ X${opt}` : `X${opt}`
+        return Markup.button.callback(text, `update_count_${opt}`)
+    })
+    for (let i = 0; i < countBtns.length; i += 2) {
+        rows.push(countBtns.slice(i, i + 2))
+    }
+
+    // Кнопки семян (по 2 в ряд)
+    const seedBtns = CROP_ORDER.map(key => {
+        const crop = CROPS[key]
+        return Markup.button.callback(
+            `${crop.emoji} ${logic.format.formatNumber(crop.seed * count)}`,
+            `plant:${key}:${count}`
+        )
+    })
+    for (let i = 0; i < seedBtns.length; i += 2) {
+        rows.push(seedBtns.slice(i, i + 2))
+    }
+
+    // Кнопки навигации
+    rows.push([
+        Markup.button.callback('⬅️ На ферму', 'farm'),
+        Markup.button.callback('⬅️ В меню', 'menu')
+    ])
+
+    return Markup.inlineKeyboard(rows)
+}
+
+/**
+ * Клавиатура экрана ТОП.
+ */
+function topsKb() {
     return Markup.inlineKeyboard([
         [Markup.button.callback('💰 По монетам', 'top_coins')],
         [Markup.button.callback('🏆 Лучший урожай', 'top_harvest')],
@@ -132,5 +145,6 @@ module.exports = {
     backKb,
     afterHarvestKb,
     farmKb,
+    shopKb,
     topsKb
 }
