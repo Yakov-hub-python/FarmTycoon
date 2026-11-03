@@ -147,7 +147,8 @@ function friendsKb(user) {
     
     return Markup.inlineKeyboard([
         [Markup.button.url('📤 Поделиться', `https://t.me/share/url?url=${link}&text=${shareText}`)],
-        [Markup.button.callback('⬅️ В меню', 'menu')]
+        [{ text: '📋 Скопировать', copy_text: { text: link } }],
+        [Markup.button.callback('⬅️ В меню', 'menu')],
     ])
 }
 

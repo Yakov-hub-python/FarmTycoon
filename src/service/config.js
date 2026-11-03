@@ -52,20 +52,25 @@ const CROPS = {
     'pineapple': {
         name: 'Ананас', emoji: '🍍', growTime: 14400, seed: 500000,
         minWeightKG: 10.0, maxWeightKG: 30.0, pricePerKG: 30000
-    }
+    },
+        'pepper': {
+        name: 'Перец', emoji: '🌶', growTime: 360, seed: 2000,
+        minWeightKG: 0.5, maxWeightKG: 1.5, pricePerKG: 1600
+    },
+    'corn': {
+        name: 'Кукуруза', emoji: '🌽', growTime: 1200, seed: 12000,
+        minWeightKG: 3.0, maxWeightKG: 8.0, pricePerKG: 2500
+    },
+    'peach': {
+        name: 'Персик', emoji: '🍑', growTime: 3600, seed: 40000,
+        minWeightKG: 0.2, maxWeightKG: 0.8, pricePerKG: 100000
+    },
 }
 
 // Порядок отображения в магазине (от быстрых к долгим)
 const CROP_ORDER = [
-    'wheat', 
-    'cucumber', 
-    'carrot', 
-    'strawberry', 
-    'pumpkin', 
-    'tomato', 
-    'watermelon', 
-    'grape', 
-    'pineapple'
+    'wheat', 'cucumber', 'carrot', 'strawberry', 'pepper', 
+    'pumpkin', 'tomato', 'corn', 'watermelon', 'peach', 'grape', 'pineapple'
 ]
 
 // ===== МУТАЦИИ =====

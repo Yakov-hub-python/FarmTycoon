@@ -4,7 +4,7 @@ const texts = require('../../utils/texts')
 const kb = require('../../utils/keyboards')
 const { safeEdit } = require('../../utils/safeEdit')
 const { CROPS } = require('../../service/config')
-
+const { showShop } = require('./shop')
 
 async function renderFarm(ctx, user) {
     await safeEdit(ctx, texts.farmText(user), {
@@ -31,7 +31,8 @@ async function slotCallback(ctx) {
         if (res.error === 'not_ready') {
             await ctx.answerCbQuery(`⏳ Ещё ${logic.format.formatTime(res.left)}`)
         } else if (res.error === 'empty') {
-            await ctx.answerCbQuery('🌱 Слот пуст — посади что-нибудь')
+            await ctx.answerCbQuery('🌱 Слот пуст. Выбери семена в магазине!')
+            return await showShop(ctx)
         } else {
             await ctx.answerCbQuery('Ошибка')
         }

@@ -7,7 +7,6 @@ const { CROPS } = require('../../service/config')
 
 async function showShop(ctx, count = 1) {
     const user = await db.getUser(ctx.from.id, ctx.from)
-    // Убрали ctx.answerCbQuery() отсюда!
     return await safeEdit(ctx, texts.shopText(user), {
         parse_mode: 'HTML',
         ...kb.shopKb(count)

@@ -2,7 +2,7 @@ const { CROPS } = require('../config')
 const time = require('./time')
 const mutations = require('./mutations')
 const events = require('./events')
-
+const vip = require('./vip')
 // ===== ПОСАДКА =====
 
 function plant(user, cropKey, index = null) {
@@ -66,10 +66,7 @@ function harvestSlot(user, index) {
     let reward = mutations.rewardForMutation(slot.crop, mutation, weight, sellMult)
 
     // VIP-бонус (+20%)
-    const now = Math.floor(Date.now() / 1000)
-    if (user.vipUntil && user.vipUntil > now) {
-        reward = Math.floor(reward * 1.2)
-    }
+    reward = vip.applyVipBonus(reward, user)
 
     // Обновляем статистику
     if(!user.stats) {
