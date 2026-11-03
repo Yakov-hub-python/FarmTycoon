@@ -1,42 +1,50 @@
 const { CROPS } = require('../config')
 const time = require('./time')
 const mutations = require('./mutations')
+const events = require('./events')
 
 // ===== ПОСАДКА =====
-/**
- * Покупка и посадка растения в первый свободный слот.
- * @param {Object} user
- * @param {string} cropKey
- * @returns {{ok: boolean, error?: string, slot?: number, crop?: string}}
- */
-function plant(user, cropKey) {
+
+function plant(user, cropKey, index = null) {
     if (!CROPS[cropKey]) return { ok: false, error: 'unknown_crop' }
 
-    const index = user.slots.indexOf(null)
-    if (index === -1) return { ok: false, error: 'no_free_slots' }
+    let target;
+    if (index === null) {
+        target = user.slots.indexOf(null)
+        if (target === -1) return { ok: false, error: 'no_free_slots' }
+    } else {
+        if (index < 0 || index >= user.slots.length) return { ok: false, error: 'bad_slot' }
+        if (user.slots[index] !== null) return { ok: false, error: 'slot_occupied' }
+        target = index
+    }
 
-    const seed = CROPS[cropKey].seed
-    if (user.coin < seed) return { ok: false, error: 'not_enough_coins' }
+    // 👈 Проверяем и списываем МОНЕТЫ, а не инвентарь
+    const seedPrice = CROPS[cropKey].seed
+    if (user.coin < seedPrice) {
+        return { ok: false, error: 'not_enough_coins' }
+    }
 
-    user.coin -= seed
-    user.slots[index] = { crop: cropKey, plantedAt: time.now() }
-    return { ok: true, slot: index, crop: cropKey }
+    // Запоминаем погоду В МОМЕНТ ПОСАДКИ
+    const weather = events.getCurrentEvent()
+
+    user.coin -= seedPrice // 👈 Списываем деньги
+    user.slots[target] = { 
+        crop: cropKey, 
+        plantedAt: time.now(),
+        weatherGrowth: weather.growthMult,
+        weatherSell: weather.sellMult
+    }
+    return { ok: true, slot: target, crop: cropKey }
 }
 
-
 // ===== СЛУЧАЙНЫЙ ВЕС =====
-function rollWeight(cropKey) {
+function rollWeight(cropKey){
     const crop = CROPS[cropKey]
-    return +(Math.random() * (crop.maxWeightKG - crop.minWeightKG) + crop.minWeightKG).toFixed(2)
+    return +(Math.random() * (crop.maxWeightKG - crop.minWeightKG) + crop.minWeightKG).toFixed(2);
 }
 
 // ===== СБОР =====
-/**
- * Сбор урожая с одного слота.
- * @param {Object} user
- * @param {number} index
- * @returns {{ok: boolean, error?: string, left?: number, item?: {crop: string, mutation: string, reward: number, weight: number}}}
- */
+
 function harvestSlot(user, index) {
     if (index < 0 || index >= user.slots.length) {
         return { ok: false, error: 'bad_slot' }
@@ -50,21 +58,30 @@ function harvestSlot(user, index) {
 
     const weight = rollWeight(slot.crop)
     const mutation = mutations.rollMutation()
-    const reward = mutations.rewardForMutation(slot.crop, mutation, weight)
+    
+    // Берем множитель цены из слота
+    const sellMult = slot.weatherSell || 1.0 
+    
+    // Передаем множитель в функцию подсчета
+    let reward = mutations.rewardForMutation(slot.crop, mutation, weight, sellMult)
 
-    if (!user.stats) {
-        user.stats = { bestHarvest: 0, bestCrop: null, bestMutation: null, bestWeight: 0 }
+    // VIP-бонус (+20%)
+    const now = Math.floor(Date.now() / 1000)
+    if (user.vipUntil && user.vipUntil > now) {
+        reward = Math.floor(reward * 1.2)
     }
 
-    // Лучший сбор — по награде. Вес пишем вместе с культурой/мутацией,
-    // чтобы в топе вес соответствовал именно лучшему сбору.
+    // Обновляем статистику
+    if(!user.stats) {
+        user.stats = { bestHarvest: 0, bestCrop: null, bestMutation: null, bestWeight: 0 }
+    }
     if (reward > (user.stats.bestHarvest || 0)) {
         user.stats.bestHarvest = reward
         user.stats.bestCrop = slot.crop
-        user.stats.bestMutation = mutation
         user.stats.bestWeight = weight
+        user.stats.bestMutation = mutation
     }
-
+    
     user.coin += reward
     user.slots[index] = null
 
@@ -74,11 +91,6 @@ function harvestSlot(user, index) {
     }
 }
 
-/**
- * Сбор со всех готовых слотов.
- * @param {Object} user
- * @returns {Array<{crop: string, mutation: string, reward: number, weight: number}>}
- */
 function harvestAll(user) {
     const items = []
     for (let i = 0; i < user.slots.length; i++) {
@@ -89,5 +101,5 @@ function harvestAll(user) {
 }
 
 module.exports = {
-    plant, harvestSlot, harvestAll,
+    plant, harvestSlot, harvestAll
 }

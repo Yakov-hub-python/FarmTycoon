@@ -5,6 +5,10 @@ const time = require('./logic/time')
 const format = require('./logic/formatting')
 const top = require('./logic/top')
 const daily = require('./logic/daily')
+const vip = require('./logic/vip')
+const ref = require('./logic/ref')
+const events = require('./logic/events')
+const promo = require('./logic/promo')
 
 // ===== ЭКСПОРТ =====
 module.exports = {
@@ -14,5 +18,9 @@ module.exports = {
     time,
     format, 
     top,
-    daily
+    daily,
+    ref,
+    vip,
+    events,
+    promo
 }

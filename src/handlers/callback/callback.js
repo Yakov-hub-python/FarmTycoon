@@ -16,6 +16,7 @@ function registerCallbacks(bot) {
     bot.action('daily', async(ctx) => require('./daily').dailyCallback(ctx))
     bot.action(/^plant:(\w+):(\d+)/, async(ctx) => require('./shop').buyToShop(ctx));
     bot.action(/^update_count_(\d+)/, async(ctx) => require('./shop').updateShop(ctx));
+    bot.action('friends', async(ctx) => require('./ref').showFriends(ctx))
 }
 
 

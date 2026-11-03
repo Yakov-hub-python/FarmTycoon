@@ -28,7 +28,8 @@ function mainMenuKb() {
         [
             Markup.button.callback('📅 Бонус', 'daily'),
             Markup.button.callback('ℹ️ Помощь', 'help')
-        ]
+        ],
+        [Markup.button.callback('🤝 Друзья', 'friends')],
     ])
 }
 
@@ -75,9 +76,10 @@ function farmKb(user) {
     // 3. Магазин и Расширение
     rows.push([
         Markup.button.callback('🛒 Магазин', 'shop'),
-        Markup.button.callback(`🟫 Расширить (${logic.format.formatNumber(logic.expansion.nextSlotPrice(user))})`, 'expand')
     ])
-
+    rows.push([
+        Markup.button.callback(`🟫 Расширить (${logic.format.formatNumber(logic.expansion.nextSlotPrice(user))})`, 'expand'),
+    ])
     // 4. Обновить
     rows.push([
         Markup.button.callback('🔄 Обновить', 'farm'),
@@ -139,6 +141,16 @@ function topsKb() {
     ])
 }
 
+function friendsKb(user) {
+    const link = `https://t.me/FarmTycoonGameBot?start=ref_${user.refCode}`
+    const shareText = encodeURIComponent('Залетай на мою ферму! Получишь 1500 монет на старт 🚜')
+    
+    return Markup.inlineKeyboard([
+        [Markup.button.url('📤 Поделиться', `https://t.me/share/url?url=${link}&text=${shareText}`)],
+        [Markup.button.callback('⬅️ В меню', 'menu')]
+    ])
+}
+
 // ===== ЭКСПОРТ =====
 module.exports = {
     mainMenuKb,
@@ -146,5 +158,6 @@ module.exports = {
     afterHarvestKb,
     farmKb,
     shopKb,
-    topsKb
+    topsKb,
+    friendsKb
 }

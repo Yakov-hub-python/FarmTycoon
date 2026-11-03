@@ -19,7 +19,7 @@ function readyAt(slot) {
     if (slot === null) return null
     const crop = CROPS[slot.crop]
     if (!crop) return null
-    return slot.plantedAt + crop.growTime
+    return slot.plantedAt + (crop.growTime * slot.weatherGrowth)
 }
 
 /**

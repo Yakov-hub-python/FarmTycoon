@@ -11,8 +11,10 @@ const { DB_PATH, START_COINS, START_SLOTS, CROPS } = require('./config')
  * @returns {Object}
  */
 function _newUser(userId) {
+    const refCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     return {
         id: userId,
+        refCode: refCode,
         username: 'unknown',
         nickname: 'Игрок',
         createdAt: Math.floor(Date.now() / 1000),
@@ -25,6 +27,10 @@ function _newUser(userId) {
             bestMutation: null,
             bestWeight: 0,
         },
+        referredBy: null,
+        referralCount: 0,
+        vipUntil: 0,
+        usedPromos: []
     }
 }
 
@@ -105,7 +111,10 @@ function normalizeUser(user, userId) {
         user.id = userId
         changed = true
     }
-
+    if (!user.refCode) {
+        user.refCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+        changed = true;
+    }
     if (typeof user.username !== 'string' || !user.username) {
         user.username = 'unknown'
         changed = true
@@ -178,7 +187,22 @@ function normalizeUser(user, userId) {
         user.stats.bestWeight = 0
         changed = true
     }
-
+    if (user.referredBy === undefined) {
+        user.referredBy = null
+        changed = true
+    }
+    if (!Number.isInteger(user.referralCount)) {
+        user.referralCount = 0
+        changed = true
+    }
+    if (!Number.isInteger(user.vipUntil)) {
+        user.vipUntil = 0
+        changed = true
+    }
+    if (!Array.isArray(user.usedPromos)) {
+        user.usedPromos = []
+        changed = true
+    }
     return changed
 }
 
@@ -234,6 +258,21 @@ async function saveUser(userId, user) {
 async function getAllUsers() {
     const db = await _readDb()
     return Object.values(db.users)
+}
+
+/**
+ * Поиск юзера по реферальному коду. Возвращает null, если не найден.
+ * @param {string} refCode Код, который ищем 
+ * @returns {Promise<Object|null>}
+ */
+async function getUserByRefCode(refCode) {
+    const db = await _readDb();
+    for (const id in db.users) {
+        if (db.users[id].refCode === refCode) {
+            return db.users[id];
+        }
+    }
+    return null;
 }
 
 module.exports = { getUser, saveUser, normalizeUser, getAllUsers }

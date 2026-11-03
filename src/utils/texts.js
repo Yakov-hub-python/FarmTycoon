@@ -1,6 +1,7 @@
 // ИМПОРТЫ
 const logic = require('../service/logic')
 const { CROPS, CROP_ORDER, MUTATIONS, MUTATION_RANK } = require('../service/config')
+const events = require('../service/logic/events')
 
 // ===== ЭКРАНИРОВАНИЕ HTML =====
 function escapeHtml(s) {
@@ -11,11 +12,13 @@ function escapeHtml(s) {
 }
 
 function displayName(user) {
-    if (user.nickname && user.username !== 'Игрок') return escapeHtml(user.nickname);
-    if (user.username && user.username !== 'unknown' && user.username !== 'uncknown') {
-        return escapeHtml(user.username);
+    if (user.nickname && user.username !== 'Игрок'){
+        return escapeHtml(`${user.nickname}` + (logic.vip.isVipActive(user) ? ' 💎' : ''));
     }
-    return 'Игрок';
+    if (user.username && user.username !== 'unknown' && user.username !== 'uncknown') {
+        return escapeHtml(`${user.username}` + (logic.vip.isVipActive(user) ? ' 💎' : ''));
+    }
+    return 'Игрок' + (logic.vip.isVipActive(user) ? ' 💎' : '');
 }
 
 // ===== КОНСТАНТЫ =====
@@ -41,6 +44,10 @@ const HELP = 'ℹ️ <b>СПРАВКА</b>\n\n' +
     '🌟 Золотая — 3% (×6)\n\n' +
     '<b>Вес</b>\n' +
     'Чем тяжелее плод, тем больше монет ты получишь!\n\n' +
+    '<b>VIP</b>\n' +
+    'VIP-статус дает +20% к продаже урожая и значок в профиле. Выдается за промокоды.\n\n' +
+    '<b>Погода</b>\n' +
+    'Каждый день на ферме меняется погода. Она влияет на время роста урожая и на его стоимость.\n\n' +
     '<b>Команды</b>\n' +
     '/start — запуск бота\n' +
     '/menu — главное меню\n' +
@@ -84,9 +91,10 @@ function farmText(user) {
     
     let status = `🌱 Занято: ${busy}/${total}`
     if (ready > 0) status += ` · ✅ Готово: ${ready}`
-
+    
     return `🚜 <b>ТВОЯ ФЕРМА</b>\n\n` +
         `💰 Баланс: <b>${logic.format.formatNumber(user.coin)}</b> монет\n` +
+        `${logic.events.getCurrentEvent().emoji} ${logic.events.getCurrentEvent().name}\n${logic.events.getCurrentEvent().desc}\n\n` +
         `${status}\n\n` +
         `👇 Выбери слот или купи семена:`
 }
@@ -188,10 +196,20 @@ function topHarvestText(users) {
     return `🏆 <b>ТОП УРОЖАЕВ</b>\n(Лучший сбор за раз)\n\n${lines.join('\n')}`
 }
 
+function friendsText(user, botUsername='FarmTycoonGameBot') {
+    const link = `https://t.me/FarmTycoonGameBot?start=ref_${user.refCode}`
+    return `🤝 <b>ДРУЗЬЯ</b>\n\n` +
+        `Приглашай друзей и получай бонусы!\n` +
+        `Вы получаете <b>5.000</b> монет, а ваш друг — <b>1.500</b> монет на старт.\n\n` +
+        `👥 Вы пригласили: <b>${user.referralCount || 0}</b> чел.\n\n` +
+        `🔗 Ваша ссылка:\n<code>${link}</code>\n\n` +
+        `Отправь её другу или нажми «Поделиться»!`
+}
+
 // ===== ЭКСПОРТ =====
 module.exports = {
     WELCOME, HELP, PLANT_ERRORS,
     menuText, farmText, harvestText, 
     shopText, topCoinsText, topHarvestText,
-    escapeHtml, displayName,
+    escapeHtml, displayName, friendsText
 }

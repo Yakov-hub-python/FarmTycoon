@@ -16,6 +16,8 @@ function registerCommands(bot) {
     bot.command('setnick', async(ctx) => await require('./setnick').setNick(ctx))
     bot.command('me', async (ctx) => await require('./me').meHandler(ctx))
     bot.command('daily', async (ctx) => await require('./daily').dailyHandler(ctx))
+    bot.command('newpromo', async (ctx) => await require('./admin').newPromoHandler(ctx))
+    bot.command('promo', async (ctx) => await require('./promo').promoHandler(ctx))
 }
 
 
