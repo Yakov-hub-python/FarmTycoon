@@ -1,6 +1,6 @@
 // ИМПОРТЫ
 const logic = require('../service/logic')
-const { CROPS, CROP_ORDER, MUTATIONS, MUTATION_RANK } = require('../service/config')
+const { CROPS, CROP_ORDER, MUTATIONS, MUTATION_RANK, TITLES } = require('../service/config')
 
 // ===== ЭКРАНИРОВАНИЕ HTML =====
 function escapeHtml(s) {
@@ -11,13 +11,24 @@ function escapeHtml(s) {
 }
 
 function displayName(user) {
-    if (user.nickname && user.username !== 'Игрок'){
-        return escapeHtml(`${user.nickname}` + (logic.vip.isVipActive(user) ? ' 💎' : ''));
+    let prefix = '';
+    // Проверяем надетый титул
+    if (user.activeTitle && TITLES[user.activeTitle]) {
+        prefix += TITLES[user.activeTitle].emoji + ' ';
     }
-    if (user.username && user.username !== 'unknown' && user.username !== 'uncknown') {
-        return escapeHtml(`${user.username}` + (logic.vip.isVipActive(user) ? ' 💎' : ''));
+    // Проверяем VIP (если нет титула или даже если есть, можно добавить VIP)
+    if (logic.vip.isVipActive(user)) {
+        prefix += '💎 ';
     }
-    return 'Игрок' + (logic.vip.isVipActive(user) ? ' 💎' : '');
+
+    // Проверяем ник (именно nickname, а не username!)
+    if (user.nickname && user.nickname !== 'Игрок') {
+        return escapeHtml(prefix + user.nickname);
+    }
+    if (user.username && user.username !== 'unknown') {
+        return escapeHtml(prefix + user.username);
+    }
+    return prefix + 'Игрок';
 }
 
 // ===== КОНСТАНТЫ =====
@@ -88,6 +99,7 @@ function menuText(user) {
     return `🌾 <b>FARM TYCOON</b>\n\n` +
         `👤 Ник: <b>${displayName(user)}</b>\n` +
         `💰 Баланс: <b>${logic.format.formatNumber(user.coin)}</b> монет\n` +
+        `🍂 Листья: ${user.leaves}\n` +
         `🌱 Слотов: ${user.slots.length}\n\n` +
         `👇 Выбери действие:`
 }
@@ -102,7 +114,7 @@ function farmText(user) {
     for (let i = 0; i < user.slots.length; i++) {
         if (user.slots[i] !== null) {
             busy++
-            if (logic.time.isReady(user.slots[i])) ready++
+            if (logic.time.isReady(user.slots[i], user)) ready++
         }
     }
     
@@ -111,6 +123,7 @@ function farmText(user) {
     const weather = logic.events.getCurrentEvent()
     return `🚜 <b>ТВОЯ ФЕРМА</b>\n\n` +
         `💰 Баланс: <b>${logic.format.formatNumber(user.coin)}</b> монет\n` +
+        `🍂 Листья: ${user.leaves}\n` +
         `${weather.emoji} ${weather.name}\n${weather.desc}\n\n` +
         `${status}\n\n` +
         `👇 Выбери слот или купи семена:`
@@ -128,9 +141,13 @@ function shopText(user) {
 /**
  * Текст экрана «✅ СОБРАНО!».
  */
+/**
+ * Текст экрана «✅ СОБРАНО!».
+ */
 function harvestText(items, balance) {
     const groups = {}
 
+    // 1. Группируем предметы
     for (const item of items) {
         const key = `${item.crop}:${item.mutation}`
         if (!groups[key]) {
@@ -141,12 +158,14 @@ function harvestText(items, balance) {
         groups[key].weight += Number(item.weight) || 0
     }
 
+    // 2. Сортируем
     const sorted = Object.values(groups).sort((a, b) => {
         const rankDiff = MUTATION_RANK[a.mutation] - MUTATION_RANK[b.mutation]
         if (rankDiff !== 0) return rankDiff
         return CROP_ORDER.indexOf(a.crop) - CROP_ORDER.indexOf(b.crop)
     })
 
+    // 3. Формируем строки культур
     const lines = sorted.map(g => {
         const crop = CROPS[g.crop]
         const mut = MUTATIONS[g.mutation]
@@ -160,15 +179,26 @@ function harvestText(items, balance) {
         return `${mut.emoji} ${mut.name} ${crop.emoji} ×${g.count} (${weightStr} кг) (+${logic.format.formatNumber(g.sum)})`
     }).filter(Boolean)
 
-    const total = items.reduce((sum, it) => sum + (Number(it.reward) || 0), 0)
+    // 4. Считаем общую сумму и листья
+    const totalReward = items.reduce((sum, it) => sum + (Number(it.reward) || 0), 0)
+    const totalLeaves = items.reduce((sum, it) => sum + (Number(it.leaves) || 0), 0)
 
+    // 5. Собираем итоговый текст
     const parts = ['✅ <b>СОБРАНО!</b>']
+    
     if (lines.length > 0) {
         parts.push('')
         parts.push(...lines)
     }
+    
     parts.push('')
-    parts.push(`💰 Получено: <b>${logic.format.formatNumber(total)}</b> монет`)
+    parts.push(`💰 Получено: <b>${logic.format.formatNumber(totalReward)}</b> монет`)
+    
+    // 👈 Выводим листья, только если они есть
+    if (totalLeaves > 0) {
+        parts.push(`🍂 Найдено листьев: <b>+${totalLeaves}</b>`)
+    }
+    
     parts.push(`💼 Баланс: <b>${logic.format.formatNumber(balance)}</b>`)
 
     return parts.join('\n')
@@ -223,10 +253,78 @@ function friendsText(user, botUsername='FarmTycoonGameBot') {
         `Отправь её другу или нажми «Поделиться»!`
 }
 
+/**
+ * Текст экрана осеннего ивента.
+ */
+function eventText(user) {
+    // Проверяем, куплена ли шляпа
+    const hatStatus = user.strawHat ? '✅ Куплена' : '500 🍂';
+
+    return `🍂 <b>ПРАЗДНИК УРОЖАЯ</b>\n\n` +
+        `Осень в самом разгаре! Собирай урожай любого растения, чтобы получать <b>Осенние листья</b>.\n` +
+        `Чем реже мутация, тем больше листьев выпадет:\n` +
+        `• Обычная — 1 🍂\n` +
+        `• ✨ Серебряная — 3 🍂\n` +
+        `• 🌟 Золотая — 10 🍂\n\n` +
+        `🍂 Ваш баланс: <b>${logic.format.formatNumber(user.leaves || 0)}</b> листьев\n\n` +
+        `<b>🎁 Награды за листья:</b>\n` +
+        `🍄 Гриб — 50 🍂 (сразу сажается на ферму)\n` +
+        `👒 Соломенная шляпа — ${hatStatus}\n` +
+        `<i>Ускоряет рост всех культур на 2% навсегда</i>\n` +
+        `👑 Титул «Осенний Магнат» — 200 🍂\n` +
+        `🎰 Ящик сокровищ — 100 🍂\n` +
+        `<i>Внутри: монеты, VIP или джекпот!</i>\n\n` +
+        `👇 Выбери награду:`;
+}
+
+function titlesText(user) {
+    let text = `🎨 <b>ВАШИ ТИТУЛЫ</b>\n\n`;
+    
+    if (!user.ownedTitles || user.ownedTitles.length === 0) {
+        return text + `У вас пока нет титулов.\nИх можно получить за участие в ивентах или купить в будущем!`;
+    }
+
+    const activeName = user.activeTitle && TITLES[user.activeTitle] 
+        ? TITLES[user.activeTitle].name 
+        : 'Отсутствует';
+
+    text += `👑 Текущий титул: <b>${activeName}</b>\n\n`;
+    text += `👇 Нажмите на титул, чтобы надеть его:`;
+    
+    return text;
+}
+
+function meText(user) {
+    const isVip = logic.vip.isVipActive(user);
+    
+    // Форматируем лучший урожай
+    let bestHarvestStr = 'Пока нет рекордов';
+    if (user.stats && user.stats.bestHarvest > 0) {
+        const crop = CROPS[user.stats.bestCrop];
+        const mut = MUTATIONS[user.stats.bestMutation];
+        const weight = user.stats.bestWeight ? `${user.stats.bestWeight.toFixed(1)} кг` : '';
+        
+        if (crop && mut) {
+            const mutText = mut.emoji ? `${mut.emoji} ` : '';
+            bestHarvestStr = `${logic.format.formatNumber(user.stats.bestHarvest)} (${mutText}${crop.emoji} ${weight})`;
+        } else {
+            bestHarvestStr = `${logic.format.formatNumber(user.stats.bestHarvest)} монет`;
+        }
+    }
+
+    return `👤 <b>ПРОФИЛЬ ИГРОКА</b>\n\n` +
+        `🏷 Ник: <b>${displayName(user)}</b>\n` +
+        `🆔 ID: <code>${user.id}</code>\n` +
+        `Статус: ${isVip ? '👑 <b>VIP активен</b>' : '❌ <b>VIP не активен</b>'}\n\n` +
+        `💰 Баланс: <b>${logic.format.formatNumber(user.coin)}</b> монет\n` +
+        `🍂 Листья: <b>${user.leaves || 0}</b>\n` +
+        `🏆 Рекорд урожая: ${bestHarvestStr}`;
+}
+
 // ===== ЭКСПОРТ =====
 module.exports = {
     WELCOME, HELP, PLANT_ERRORS,
     menuText, farmText, harvestText, 
     shopText, topCoinsText, topHarvestText,
-    escapeHtml, displayName, friendsText
+    escapeHtml, displayName, friendsText, eventText, titlesText, meText
 }

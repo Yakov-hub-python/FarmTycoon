@@ -53,7 +53,7 @@ function harvestSlot(user, index) {
     const slot = user.slots[index]
     if (slot === null) return { ok: false, error: 'empty' }
 
-    const left = time.timeLeft(slot)
+    const left = time.timeLeft(slot, user)
     if (left > 0) return { ok: false, error: 'not_ready', left }
 
     const weight = rollWeight(slot.crop)
@@ -67,7 +67,10 @@ function harvestSlot(user, index) {
 
     // VIP-бонус (+20%)
     reward = vip.applyVipBonus(reward, user)
+    // Добавление листьев
 
+    const leaves = countingLeaves(mutation)
+    user.leaves += leaves
     // Обновляем статистику
     if(!user.stats) {
         user.stats = { bestHarvest: 0, bestCrop: null, bestMutation: null, bestWeight: 0 }
@@ -84,7 +87,7 @@ function harvestSlot(user, index) {
 
     return {
         ok: true,
-        item: { crop: slot.crop, mutation, reward, weight },
+        item: { crop: slot.crop, mutation, reward, weight, leaves},
     }
 }
 
@@ -95,6 +98,13 @@ function harvestAll(user) {
         if (res.ok) items.push(res.item)
     }
     return items
+}
+
+// ===== ЭВЕНТ =====
+function countingLeaves(mutation){
+    if(mutation === 'common') return 1;
+    if(mutation === 'silver') return 3;
+    return 10;
 }
 
 module.exports = {

@@ -53,7 +53,7 @@ const CROPS = {
         name: 'Ананас', emoji: '🍍', growTime: 14400, seed: 500000,
         minWeightKG: 10.0, maxWeightKG: 30.0, pricePerKG: 30000
     },
-        'pepper': {
+    'pepper': {
         name: 'Перец', emoji: '🌶', growTime: 360, seed: 2000,
         minWeightKG: 0.5, maxWeightKG: 1.5, pricePerKG: 1600
     },
@@ -65,9 +65,12 @@ const CROPS = {
         name: 'Персик', emoji: '🍑', growTime: 3600, seed: 40000,
         minWeightKG: 0.2, maxWeightKG: 0.8, pricePerKG: 100000
     },
+    'mushroom': {
+        name: 'Гриб', emoji: '🍄', growTime: 3600, seed: 0,
+        minWeightKG: 1.0, maxWeightKG: 3.0, pricePerKG: 50000
+    }
 }
 
-// Порядок отображения в магазине (от быстрых к долгим)
 const CROP_ORDER = [
     'wheat', 'cucumber', 'carrot', 'strawberry', 'pepper', 
     'pumpkin', 'tomato', 'corn', 'watermelon', 'peach', 'grape', 'pineapple'
@@ -75,13 +78,27 @@ const CROP_ORDER = [
 
 // ===== МУТАЦИИ =====
 const MUTATIONS = {
-    'common': { name: 'Обычная',    emoji: '',   chance: 0.85, mult: 1.0 },
+    'common': { name: 'Обычная', emoji: '', chance: 0.85, mult: 1.0 },
     'silver': { name: 'Серебряная', emoji: '✨', chance: 0.12, mult: 2.0 },
-    'gold': { name: 'Золотая',    emoji: '🌟', chance: 0.03, mult: 6.0 }
+    'gold': { name: 'Золотая', emoji: '🌟', chance: 0.03, mult: 6.0 }
 }
 
 const MUTATION_ROLL_ORDER = ['gold', 'silver', 'common']
 const MUTATION_RANK = { common: 0, silver: 1, gold: 2 }
+
+// ===== ТИТУЛЫ =====
+const TITLES = {
+    'autumn_magnate': { name: '🍂 Осенний Магнат', emoji: '🍂' },
+    'lucky': { name: '🎰 Счастливчик', emoji: '🎰' }
+}
+
+// ===== ОСЕННИЙ ЭВЕНТ =====
+const EVENT_PRICES = {
+    mushroom: 50,
+    strawHat: 500,
+    title: 200,
+    lootbox: 100
+}
 
 // ===== ЭКСПОРТ =====
 module.exports = {    
@@ -90,4 +107,5 @@ module.exports = {
     SLOT_BASE_PRICE, SLOT_PRICE_MULT, SLOT_PRICE_FIRST, SLOT_MAX_COUNT,
     CROPS, CROP_ORDER,
     MUTATIONS, MUTATION_ROLL_ORDER, MUTATION_RANK,
+    TITLES, EVENT_PRICES
 }

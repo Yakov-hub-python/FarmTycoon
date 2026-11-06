@@ -9,6 +9,7 @@ const vip = require('./logic/vip')
 const ref = require('./logic/ref')
 const events = require('./logic/events')
 const promo = require('./logic/promo')
+const event = require('./logic/event')
 
 // ===== ЭКСПОРТ =====
 module.exports = {
@@ -22,5 +23,6 @@ module.exports = {
     ref,
     vip,
     events,
-    promo
+    promo,
+    event,
 }

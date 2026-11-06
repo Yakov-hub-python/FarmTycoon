@@ -1,49 +1,32 @@
 const { CROPS } = require('../config')
 
-// ===== ВРЕМЯ =====
-
-/**
- * Текущее время в unix-СЕКУНДАХ.
- * @returns {number}
- */
 function now() {
     return Math.floor(Date.now() / 1000)
 }
 
-/**
- * Timestamp, когда слот будет готов.
- * @param {Object|null} slot
- * @returns {number|null} null — если слот пуст или crop битый
- */
-function readyAt(slot) {
+function readyAt(slot, user = {}) {
     if (slot === null) return null
     const crop = CROPS[slot.crop]
     if (!crop) return null
-    return slot.plantedAt + (crop.growTime * slot.weatherGrowth)
+    
+    let growTime = crop.growTime;
+    if (user.strawHat === true) {
+        growTime *= 0.98;
+    }
+    
+    return slot.plantedAt + (growTime * (slot.weatherGrowth || 1.0))
 }
 
-/**
- * Сколько секунд осталось до готовности слота.
- * @param {Object|null} slot
- * @returns {number} 0 — если слот пуст или уже готов
- */
-function timeLeft(slot) {
-    const ready = readyAt(slot)
+function timeLeft(slot, user = {}) {
+    const ready = readyAt(slot, user)
     if (ready === null) return 0
     return Math.max(0, ready - now())
 }
 
-/**
- * Готов ли слот к сбору.
- * @param {Object|null} slot
- * @returns {boolean} false — для null и для битого crop
- */
-function isReady(slot) {
+function isReady(slot, user = {}) {
     if (slot === null) return false
     if (!CROPS[slot.crop]) return false
-    return timeLeft(slot) === 0
+    return timeLeft(slot, user) === 0
 }
 
-module.exports = {
-    now, readyAt, timeLeft, isReady
-}
+module.exports = { now, readyAt, timeLeft, isReady }

@@ -19,6 +19,7 @@ function _newUser(userId) {
         nickname: 'Игрок',
         createdAt: Math.floor(Date.now() / 1000),
         coin: START_COINS,
+        leaves: 0,
         slots: Array(START_SLOTS).fill(null),
         last_collection: 0,
         stats: {
@@ -30,7 +31,10 @@ function _newUser(userId) {
         referredBy: null,
         referralCount: 0,
         vipUntil: 0,
-        usedPromos: []
+        usedPromos: [],
+        strawHat: false,
+        ownedTitles: [],
+        activeTitle: null,
     }
 }
 
@@ -106,7 +110,6 @@ function _withLock(fn) {
  */
 function normalizeUser(user, userId) {
     let changed = false
-
     if (user.id !== userId) {
         user.id = userId
         changed = true
@@ -119,53 +122,40 @@ function normalizeUser(user, userId) {
         user.username = 'unknown'
         changed = true
     }
-
     if (typeof user.nickname !== 'string' || !user.nickname || user.nickname.split(' ').length > 3) {
         user.nickname = 'Игрок'
         changed = true
     }
-
     if (!Number.isInteger(user.createdAt)) {
         user.createdAt = Math.floor(Date.now() / 1000)
         changed = true
     }
-
     if (!Number.isInteger(user.coin) || user.coin < 0) {
         user.coin = START_COINS
         changed = true
     }
-
     if (!Array.isArray(user.slots)) {
         user.slots = Array(START_SLOTS).fill(null)
         changed = true
     }
-
-    // Дотянуть до стартового размера. Не обрезаем — слоты покупаются.
     if (user.slots.length < START_SLOTS) {
         const need = START_SLOTS - user.slots.length
         user.slots.push(...Array(need).fill(null))
         changed = true
     }
-
     for (let i = 0; i < user.slots.length; i++) {
         const slot = user.slots[i]
         if (slot === null) continue
-
-        // Не объект, массив или что-то странное — обнуляем
         if (typeof slot !== 'object' || Array.isArray(slot)) {
             user.slots[i] = null
             changed = true
             continue
         }
-
-        // Нет обязательных полей — обнуляем
         if (!slot.crop || !Number.isInteger(slot.plantedAt)) {
             user.slots[i] = null
             changed = true
             continue
         }
-
-        // Неизвестная культура — обнуляем
         if (!CROPS[slot.crop]) {
             user.slots[i] = null
             changed = true
@@ -202,6 +192,22 @@ function normalizeUser(user, userId) {
     if (!Array.isArray(user.usedPromos)) {
         user.usedPromos = []
         changed = true
+    }
+    if (user.leaves === undefined || !Number.isInteger(user.leaves) || user.leaves < 0) {
+        user.leaves = 0;
+        changed = true;
+    }
+    if (user.strawHat === undefined || typeof user.strawHat !== 'boolean') {
+        user.strawHat = false;
+        changed = true;
+    }
+    if (!Array.isArray(user.ownedTitles)) {
+        user.ownedTitles = [];
+        changed = true;
+    }
+    if (user.activeTitle === undefined || (typeof user.activeTitle !== 'string' && user.activeTitle !== null)) {
+        user.activeTitle = null;
+        changed = true;
     }
     return changed
 }
