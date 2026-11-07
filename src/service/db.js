@@ -281,4 +281,4 @@ async function getUserByRefCode(refCode) {
     return null;
 }
 
-module.exports = { getUser, saveUser, normalizeUser, getAllUsers }
+module.exports = { getUser, saveUser, normalizeUser, getAllUsers, getUserByRefCode }
