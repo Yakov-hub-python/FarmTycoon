@@ -30,7 +30,7 @@ function activatePromo(user, db, code) {
     // Выдаем награду
     let rewardText = ''
     if (promo.type === 'vip') {
-        vip.addVipDays(user, promo.amount)
+        vip.addVipDays(user, promo.amount, 'promo_' + code)
         rewardText = `💎 VIP на ${promo.amount} дн.`
     } else if (promo.type === 'coins') {
         user.coin += promo.amount

@@ -31,14 +31,30 @@ function formatTime(seconds) {
         return parts.join(' ')
     }
 
-    const hours = Math.floor(total / 3600)
-    const remainingMinutes = Math.floor((total % 3600) / 60)
+    if (total < 86400) {
+        const hours = Math.floor(total / 3600)
+        const remainingMinutes = Math.floor((total % 3600) / 60)
+        const parts = []
+        if (hours > 0) parts.push(`${hours} ч.`)
+        if (remainingMinutes > 0) parts.push(`${remainingMinutes} мин.`)
+        return parts.join(' ')
+    }
+
+    const days = Math.floor(total / 86400)
+    const remainingHours = Math.floor((total % 86400) / 3600)
     const parts = []
-    if (hours > 0) parts.push(`${hours} ч.`)
-    if (remainingMinutes > 0) parts.push(`${remainingMinutes} мин.`)
+    if (days > 0) parts.push(`${days} дн.`)
+    if (remainingHours > 0) parts.push(`${remainingHours} ч.`)
     return parts.join(' ')
 }
 
+function formatDate(timestamp) {
+    const date = new Date(timestamp * 1000)
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}.${month}.${day}`
+}
 module.exports = {
-    formatNumber, formatTime
+    formatNumber, formatTime, formatDate
 }

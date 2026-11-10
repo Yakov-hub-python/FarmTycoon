@@ -4,6 +4,7 @@ const { BOT_TOKEN } = require('./service/config')
 const http = require('http');
 const registerCommands  = require('./handlers/commands/commands')
 const registerCallbacks = require('./handlers/callback/callback')
+const runCron = require('./utils/cron')
 
 if (!BOT_TOKEN) throw new Error('BOT_TOKEN не задан в .env')
 
@@ -11,7 +12,7 @@ const bot = new Telegraf(BOT_TOKEN)
 
 registerCommands(bot)
 registerCallbacks(bot)
-
+runCron(bot)
 
 bot.catch((err, ctx) => {
     console.error(`Ошибка в ${ctx.updateType}:`, err)

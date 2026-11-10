@@ -14,11 +14,17 @@ async function renderEvent(ctx, user) {
 
 async function showEvent(ctx) {
     const user = await db.getUser(ctx.from.id, ctx.from)
+    if(!logic.event.isEventActive()) {
+        return ctx.answerCbQuery('❌ Событие не активно.', { show_alert: true })
+    }
     await ctx.answerCbQuery() // Отвечаем на клик, чтобы убрать спиннер
     await renderEvent(ctx, user)
 }
 
 async function buyEventItem(ctx) {
+    if(!logic.event.isEventActive()) {
+        return ctx.answerCbQuery('❌ Событие не активно.', { show_alert: true })
+    }
     const itemKey = ctx.match[1]
     const user = await db.getUser(ctx.from.id, ctx.from)
     

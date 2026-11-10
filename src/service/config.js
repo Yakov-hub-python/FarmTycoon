@@ -86,13 +86,15 @@ const MUTATIONS = {
 const MUTATION_ROLL_ORDER = ['gold', 'silver', 'common']
 const MUTATION_RANK = { common: 0, silver: 1, gold: 2 }
 
+// ===== VIP =====
+const VIP_BONUS_MULT = 1.2
 // ===== ТИТУЛЫ =====
 const TITLES = {
     'autumn_magnate': { name: '🍂 Осенний Магнат', emoji: '🍂' },
     'lucky': { name: '🎰 Счастливчик', emoji: '🎰' }
 }
 
-// ===== ОСЕННИЙ ЭВЕНТ =====
+// ===== ОСЕННИЙ ИВЕНТ =====
 const EVENT_PRICES = {
     mushroom: 50,
     strawHat: 500,
@@ -100,6 +102,7 @@ const EVENT_PRICES = {
     lootbox: 100
 }
 
+const EVENT_END_TIMESTAMP = new Date('2026-12-01T00:00:00+03:00').getTime()
 // ===== ЭКСПОРТ =====
 module.exports = {    
     BOT_TOKEN, DB_PATH, ADMIN_ID,
@@ -107,5 +110,7 @@ module.exports = {
     SLOT_BASE_PRICE, SLOT_PRICE_MULT, SLOT_PRICE_FIRST, SLOT_MAX_COUNT,
     CROPS, CROP_ORDER,
     MUTATIONS, MUTATION_ROLL_ORDER, MUTATION_RANK,
-    TITLES, EVENT_PRICES
+    VIP_BONUS_MULT,
+    TITLES, 
+    EVENT_PRICES, EVENT_END_TIMESTAMP
 }

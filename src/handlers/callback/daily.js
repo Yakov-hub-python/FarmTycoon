@@ -17,7 +17,7 @@ async function dailyCallback(ctx){
     user.coin += reward
     user.last_collection = logic.time.now()
     await db.saveUser(ctx.from.id, user)
-    return safeEdit(ctx, `✅ Вы получили награду в размере ${reward} монет!`,
+    return safeEdit(ctx, `✅ Вы получили награду в размере ${logic.format.formatNumber(reward)} монет!`,
         {
             reply_markup: 
                 {inline_keyboard: [[{text: 'Назад', callback_data: 'menu'}]]}

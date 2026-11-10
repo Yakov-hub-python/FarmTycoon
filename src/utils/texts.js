@@ -82,12 +82,12 @@ const HELP = 'ℹ️ <b>СПРАВКА ПО ИГРЕ</b>\n\n' +
     '/help — эта справка';
 
 const PLANT_ERRORS = {
-    unknown_crop:     '❓ Такой культуры нет',
-    no_free_slots:    '🌱 Все слоты заняты. Расширь поле!',
-    not_enough_coins: '💰 Не хватает монет',
-    no_seeds:         '🎒 Нет семян. Купи на рынке!',
-    slot_occupied:    '🌱 Этот слот уже занят',
-    bad_slot:         '❌ Неверный слот',
+    unknown_crop:     '❓ Такой культуры нет. Выбери из списка!',
+    no_free_slots:    '🌱 Все грядки заняты. Собери урожай или расширь поле!',
+    not_enough_coins: '💰 Монет не хватает. Собери урожай или подожди немного!',
+    no_seeds:         '🎒 Нет семян. Купи на рынке — /farm → 🌱 Культуры',
+    slot_occupied:    '🌱 Тут уже что-то растёт. Собери урожай сначала',
+    bad_slot:         '❌ Неверный слот. Попробуй ещё раз',
 }
 
 // ===== ЭКРАНЫ =====
@@ -96,10 +96,14 @@ const PLANT_ERRORS = {
  * Текст главного меню
  */
 function menuText(user) {
+    const leftTimeVip = logic.vip.isVipActive(user) ? user.vipUntil - logic.time.now() : 0;
+    const leavesText = logic.event.isEventActive()?`🍂 Листья: ${user.leaves}\n`: ''
     return `🌾 <b>FARM TYCOON</b>\n\n` +
         `👤 Ник: <b>${displayName(user)}</b>\n` +
         `💰 Баланс: <b>${logic.format.formatNumber(user.coin)}</b> монет\n` +
-        `🍂 Листья: ${user.leaves}\n` +
+        `💎 VIP: ${logic.vip.isVipActive(user) ? `👑 <b>VIP активен еще ${logic.format.formatTime(leftTimeVip)}</b>\n` : 
+            '❌ <b>VIP не активен</b>'}\n` +
+        leavesText +
         `🌱 Слотов: ${user.slots.length}\n\n` +
         `👇 Выбери действие:`
 }
@@ -121,9 +125,11 @@ function farmText(user) {
     let status = `🌱 Занято: ${busy}/${total}`
     if (ready > 0) status += ` · ✅ Готово: ${ready}`
     const weather = logic.events.getCurrentEvent()
+    const leavesLine = logic.event.isEventActive() ? `🍂 Листья: ${user.leaves}\n` : ''
+
     return `🚜 <b>ТВОЯ ФЕРМА</b>\n\n` +
         `💰 Баланс: <b>${logic.format.formatNumber(user.coin)}</b> монет\n` +
-        `🍂 Листья: ${user.leaves}\n` +
+        leavesLine +
         `${weather.emoji} ${weather.name}\n${weather.desc}\n\n` +
         `${status}\n\n` +
         `👇 Выбери слот или купи семена:`
@@ -193,9 +199,8 @@ function harvestText(items, balance) {
     
     parts.push('')
     parts.push(`💰 Получено: <b>${logic.format.formatNumber(totalReward)}</b> монет`)
-    
-    // 👈 Выводим листья, только если они есть
-    if (totalLeaves > 0) {
+    // 👈 Выводим листья, только если они есть и идет ивент
+    if (totalLeaves > 0 && logic.event.isEventActive()) {
         parts.push(`🍂 Найдено листьев: <b>+${totalLeaves}</b>`)
     }
     
@@ -243,14 +248,21 @@ function topHarvestText(users) {
     return `🏆 <b>ТОП УРОЖАЕВ</b>\n(Лучший сбор за раз)\n\n${lines.join('\n')}`
 }
 
-function friendsText(user, botUsername='FarmTycoonGameBot') {
+function friendsText(user) {
     const link = `https://t.me/FarmTycoonGameBot?start=ref_${user.refCode}`
+    const count = user.referralCount || 0
+
+    const countLine = count === 0
+        ? `👥 Вы пока никого не пригласили.\n🔗 Поделитесь ссылкой ниже — и получите бонус!`
+        : `👥 Вы пригласили: <b>${count}</b> чел. <i>Отличная работа!</i>`
+
     return `🤝 <b>ДРУЗЬЯ</b>\n\n` +
-        `Приглашай друзей и получай бонусы!\n` +
-        `Вы получаете <b>5.000</b> монет, а ваш друг — <b>1.500</b> монет на старт.\n\n` +
-        `👥 Вы пригласили: <b>${user.referralCount || 0}</b> чел.\n\n` +
+        `Приглашайте друзей — и получайте бонусы!\n` +
+        `Вы получите <b>5.000</b> монет, когда друг соберёт <b>5 урожаев</b>.\n` +
+        `Друг получит <b>1.500</b> монет на старт сразу.\n\n` +
+        `${countLine}\n\n` +
         `🔗 Ваша ссылка:\n<code>${link}</code>\n\n` +
-        `Отправь её другу или нажми «Поделиться»!`
+        `Отправьте её другу или нажмите «Поделиться»!`
 }
 
 /**
@@ -278,25 +290,37 @@ function eventText(user) {
 }
 
 function titlesText(user) {
-    let text = `🎨 <b>ВАШИ ТИТУЛЫ</b>\n\n`;
-    
+    let text = `🎨 <b>ВАШИ ТИТУЛЫ</b>\n\n`
+
+    // Пустое состояние
     if (!user.ownedTitles || user.ownedTitles.length === 0) {
-        return text + `У вас пока нет титулов.\nИх можно получить за участие в ивентах или купить в будущем!`;
+        return text +
+            `👑 У вас пока нет титулов.\n\n` +
+            `🏆 Загляните в магазин — там есть на что посмотреть!\n` +
+            `🎁 А за участие в ивентах титулы даются бесплатно!`
     }
 
-    const activeName = user.activeTitle && TITLES[user.activeTitle] 
-        ? TITLES[user.activeTitle].name 
-        : 'Отсутствует';
+    // Активный титул
+    const activeEntry = user.activeTitle ? TITLES[user.activeTitle] : null
+    const activeName = activeEntry ? activeEntry.name : null
 
-    text += `👑 Текущий титул: <b>${activeName}</b>\n\n`;
-    text += `👇 Нажмите на титул, чтобы надеть его:`;
-    
-    return text;
+    // Защита от «мёртвого» титула: id есть, а в конфиге уже нет
+    if (user.activeTitle && !activeEntry) {
+        user.activeTitle = null
+    }
+
+    text += activeName
+        ? `👑 Текущий титул: <b>${activeName}</b>\n\n`
+        : `👑 Текущий титул: <i>не выбран</i>\n\n`
+
+    text += `👇 Нажмите на титул ниже, чтобы надеть его:`
+
+    return text
 }
 
 function meText(user) {
     const isVip = logic.vip.isVipActive(user);
-    
+    const leftTimeVip = isVip ? user.vipUntil - logic.time.now() : 0;
     // Форматируем лучший урожай
     let bestHarvestStr = 'Пока нет рекордов';
     if (user.stats && user.stats.bestHarvest > 0) {
@@ -311,13 +335,15 @@ function meText(user) {
             bestHarvestStr = `${logic.format.formatNumber(user.stats.bestHarvest)} монет`;
         }
     }
-
+    const leavesText = logic.event.isEventActive() ? `🍂 Листья: <b>${user.leaves || 0}</b>\n` : ''
+    const leftDayToReg = Math.floor((logic.time.now() - user.createdAt) / 86400) || 0;
     return `👤 <b>ПРОФИЛЬ ИГРОКА</b>\n\n` +
         `🏷 Ник: <b>${displayName(user)}</b>\n` +
         `🆔 ID: <code>${user.id}</code>\n` +
-        `Статус: ${isVip ? '👑 <b>VIP активен</b>' : '❌ <b>VIP не активен</b>'}\n\n` +
+        `Статус: ${isVip ? `👑 <b>VIP активен еще <i>${logic.format.formatTime(leftTimeVip)}</i></b>` : '❌ <b>VIP не активен</b>'}\n\n` +
         `💰 Баланс: <b>${logic.format.formatNumber(user.coin)}</b> монет\n` +
-        `🍂 Листья: <b>${user.leaves || 0}</b>\n` +
+        `🚜 На ферме с <b>${logic.format.formatDate(user.createdAt)}(<i>${leftDayToReg} дн.</i>)</b>\n` +
+        leavesText +
         `🏆 Рекорд урожая: ${bestHarvestStr}`;
 }
 

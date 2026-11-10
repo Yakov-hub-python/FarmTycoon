@@ -3,6 +3,7 @@ const time = require('./time')
 const mutations = require('./mutations')
 const events = require('./events')
 const vip = require('./vip')
+const leavesEvent = require('./event')
 // ===== ПОСАДКА =====
 
 function plant(user, cropKey, index = null) {
@@ -44,7 +45,6 @@ function rollWeight(cropKey){
 }
 
 // ===== СБОР =====
-
 function harvestSlot(user, index) {
     if (index < 0 || index >= user.slots.length) {
         return { ok: false, error: 'bad_slot' }
@@ -68,9 +68,9 @@ function harvestSlot(user, index) {
     // VIP-бонус (+20%)
     reward = vip.applyVipBonus(reward, user)
     // Добавление листьев
-
-    const leaves = countingLeaves(mutation)
+    const leaves = leavesEvent.isEventActive()? countingLeaves(mutation) : 0
     user.leaves += leaves
+
     // Обновляем статистику
     if(!user.stats) {
         user.stats = { bestHarvest: 0, bestCrop: null, bestMutation: null, bestWeight: 0 }

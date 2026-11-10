@@ -1,6 +1,7 @@
 const config = require('../config')
 const vip = require('./vip')
 const plant = require('./plant')
+const time = require('./time')
 
 /**
  * Проверяет, можно ли купить предмет.
@@ -51,7 +52,7 @@ function applyPurchase(user, itemKey) {
     if (itemKey === 'lootbox') {
         const random = Math.random()
         if (random < 0.01) { // 1%
-            vip.addVipDays(user, 10)
+            vip.addVipDays(user, 10, 'event_lootbox')
             if (!user.ownedTitles.includes('lucky')) {
                 user.ownedTitles.push('lucky')
             }
@@ -60,7 +61,7 @@ function applyPurchase(user, itemKey) {
             user.leaves += 150
             return { ok: true, text: '🍂 Вы нашли 150 листьев!' }
         } else if (random < 0.40) { // 30%
-            vip.addVipDays(user, 1)
+            vip.addVipDays(user, 1, 'event_lootbox')
             return { ok: true, text: '💎 VIP на 1 день!' }
         } else { // 60%
             user.coin += 50000
@@ -76,4 +77,9 @@ function applyPurchase(user, itemKey) {
     return { ok: true, text: '✅ Покупка успешна!' }
 }
 
-module.exports = { canBuy, applyPurchase }
+function isEventActive(){
+    return time.now() < config.EVENT_END_TIMESTAMP
+}
+
+
+module.exports = { canBuy, applyPurchase, isEventActive}

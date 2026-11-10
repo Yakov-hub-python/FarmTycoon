@@ -1,5 +1,9 @@
 const { CROPS } = require('../config')
 
+/**
+ * Получение текущего времени в сек.
+ * @returns Unix-время в сек.
+ */
 function now() {
     return Math.floor(Date.now() / 1000)
 }

@@ -1,7 +1,7 @@
 // db.js
 const fs = require('fs/promises')
 const { DB_PATH, START_COINS, START_SLOTS, CROPS } = require('./config')
-
+const logic = require('./logic')
 
 /**
  * Свежий юзер со стартовыми значениями.
@@ -17,7 +17,7 @@ function _newUser(userId) {
         refCode: refCode,
         username: 'unknown',
         nickname: 'Игрок',
-        createdAt: Math.floor(Date.now() / 1000),
+        createdAt: Math.floor(logic.time.now() / 1000),
         coin: START_COINS,
         leaves: 0,
         slots: Array(START_SLOTS).fill(null),
@@ -209,6 +209,11 @@ function normalizeUser(user, userId) {
         user.activeTitle = null;
         changed = true;
     }
+    if(!logic.event.isEventActive()){
+        user.coin = user.leaves * 1000 + user.coin
+        delete user.leaves
+        changed = true
+    }
     return changed
 }
 
@@ -281,4 +286,13 @@ async function getUserByRefCode(refCode) {
     return null;
 }
 
-module.exports = { getUser, saveUser, normalizeUser, getAllUsers, getUserByRefCode }
+/**
+ * Возвращает резервную копию базы данных в виде объекта. Если база данных не существует или повреждена, возвращает пустой объект.
+ * @returns {Promise<Object>}
+ */
+async function backupDatabase() {
+    const data = await _readDb();
+    return data
+}
+
+module.exports = { getUser, saveUser, normalizeUser, getAllUsers, getUserByRefCode, backupDatabase }

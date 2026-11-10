@@ -2,6 +2,7 @@
 const { Markup } = require('telegraf')
 const logic = require('../service/logic')
 const { CROPS, CROP_ORDER, TITLES } = require('../service/config')
+const config = require('../service/config')
 
 /**
  * Текст одной кнопки слота.
@@ -31,7 +32,7 @@ function mainMenuKb() {
             Markup.button.callback('ℹ️ Помощь', 'help')
         ],
         [Markup.button.callback('🤝 Друзья', 'friends')],
-        [Markup.button.callback('🍂 Праздник Урожая', 'event')]
+        logic.event.isEventActive()?[Markup.button.callback('🍂 Праздник Урожая', 'event')]: []
     ])
 }
 
@@ -79,9 +80,15 @@ function farmKb(user) {
     rows.push([
         Markup.button.callback('🛒 Магазин', 'shop'),
     ])
-    rows.push([
-        Markup.button.callback(`🟫 Расширить (${logic.format.formatNumber(logic.expansion.nextSlotPrice(user))})`, 'expand'),
-    ])
+    
+    if(user.slots.length < config.SLOT_MAX_COUNT){
+        rows.push([
+            Markup.button.callback(
+                `🟫 Расширить (${logic.format.formatNumber(logic.expansion.nextSlotPrice(user))})`, 
+                'expand'
+            ),
+        ])
+    }
     // 4. Обновить
     rows.push([
         Markup.button.callback('🔄 Обновить', 'farm'),
