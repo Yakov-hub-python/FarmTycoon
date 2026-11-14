@@ -22,6 +22,10 @@ function registerCallbacks(bot) {
     bot.action('profile', async(ctx) => require('./me').meCallback(ctx))
     bot.action('titles_menu', async(ctx) => await require('./titles').showTitles(ctx))
     bot.action(/^equip_title:(.+)/, async(ctx) => require('./titles').equipTitle(ctx))
+    bot.action('lab', async(ctx) => require('./upgrades').showLab(ctx))
+    bot.action(/^lab_(buy|cd|poor)_(\w+)$/, async(ctx) => require('./upgrades').showUpgrade(ctx))
+    bot.action('lab_refresh', async(ctx) => require('./upgrades').updateUpgrade(ctx))
+    bot.action('lab_noop', async(ctx) => require('./upgrades').maxUpgrade(ctx))
 }
 
 

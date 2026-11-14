@@ -1,6 +1,6 @@
 // ИМПОРТЫ
 const logic = require('../service/logic')
-const { CROPS, CROP_ORDER, MUTATIONS, MUTATION_RANK, TITLES } = require('../service/config')
+const { CROPS, CROP_ORDER, MUTATIONS, MUTATION_RANK, TITLES, LAB_UPGRADES, VIP_SELL_MULT } = require('../service/config')
 
 // ===== ЭКРАНИРОВАНИЕ HTML =====
 function escapeHtml(s) {
@@ -347,10 +347,70 @@ function meText(user) {
         `🏆 Рекорд урожая: ${bestHarvestStr}`;
 }
 
+
+// Краткое описание эффекта на текущем уровне
+function _upgradeEffectText(cfg, level) {
+    const value = level * cfg.effectPerLevel
+    switch (cfg.effectType) {
+        case 'goldChance':
+            return `+${(value * 100).toFixed(1)}% к золотой мутации`
+        case 'weight':
+            return `+${(value * 100).toFixed(0)}% к весу урожая`
+        case 'growthSpeed':
+            return `−${(value * 100).toFixed(0)}% ко времени роста`
+        case 'slots':
+            return `+${value} ${value === 1 ? 'слот' : 'слотов'}`
+        default:
+            return ''
+    }
+}
+
+// Статус кнопки/строки
+function _upgradeStatusLine(user, key, price, cooldownLeft) {
+    const cfg = LAB_UPGRADES[key]
+    const level = user.upgrades?.[key] ?? 0
+
+    if (level >= cfg.maxLevel) return '   ✅ <b>MAX</b>'
+    if (cooldownLeft > 0) return `   ⏱ Доступно через ${logic.format.formatTime(cooldownLeft)}`
+    if (price !== null && user.coin < price) return `   💰 Нужно ${logic.format.formatNumber(price)} (не хватает)`
+    return `   💰 Следующий: <b>${logic.format.formatNumber(price)}</b> монет · ✅ Доступно`
+}
+
+/**
+ * Текст экрана лаборатории.
+ * @param {Object} user
+ * @returns {string}
+ */
+function upgradeText(user) {
+    const now = Math.floor(Date.now() / 1000)
+
+    let text = `🧪 <b>ЛАБОРАТОРИЯ АГРОНОМА</b>\n\n`
+    text += `Прокачивай ветки — усиливай ферму. У каждой ветки свой кулдаун.\n\n`
+
+    for (const key of ['genetics', 'selection', 'agronomy', 'land']) {
+        const cfg = LAB_UPGRADES[key]
+        const level = user.upgrades?.[key] ?? 0
+        const price = logic.upgrades.getUpgradePrice(user, key)
+        const cdLeft = logic.upgrades.getUpgradeCooldownLeft(user, key)
+        const effect = _upgradeEffectText(cfg, level)
+
+        text += `${cfg.emoji} <b>${cfg.name}</b> — ур. ${level}/${cfg.maxLevel}\n`
+        text += `   ${cfg.desc}\n`
+        if (effect) text += `   ${effect}\n`
+        text += _upgradeStatusLine(user, key, price, cdLeft) + `\n\n`
+    }
+
+    const vipMultPct = Math.round((VIP_SELL_MULT - 1) * 100)
+    text += `💰 Твой баланс: <b>${logic.format.formatNumber(user.coin)}</b> монет\n`
+
+    return text
+}
+
 // ===== ЭКСПОРТ =====
 module.exports = {
     WELCOME, HELP, PLANT_ERRORS,
     menuText, farmText, harvestText, 
     shopText, topCoinsText, topHarvestText,
-    escapeHtml, displayName, friendsText, eventText, titlesText, meText
+    escapeHtml, displayName, friendsText, eventText, 
+    titlesText, meText, upgradeText
 }

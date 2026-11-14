@@ -5,13 +5,24 @@ const { CROPS, MUTATIONS, MUTATION_ROLL_ORDER } = require('../config')
 
 /**
  * Рандомный выбор мутации по шансам.
+ * @param {Object} user Пользователь
  * @returns {'common'|'silver'|'gold'}
  */
-function rollMutation() {
+function rollMutation(user) {
+    const genetics = user?.upgrades?.genetics ?? 0
+    const goldBonus = genetics * 0.005
+    const goldChance = Math.min(0.5, 0.03 + goldBonus)
+
+    const chances = {
+        gold: goldChance,
+        silver: MUTATIONS.silver.chance,
+        common: Math.max(0, 1 - goldChance - MUTATIONS.silver.chance),
+    }
+
     const random = Math.random()
     let total = 0
     for (const key of MUTATION_ROLL_ORDER) {
-        total += MUTATIONS[key].chance
+        total += chances[key]
         if (random < total) return key
     }
     return MUTATION_ROLL_ORDER[MUTATION_ROLL_ORDER.length - 1]

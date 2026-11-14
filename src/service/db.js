@@ -1,6 +1,6 @@
 // db.js
 const fs = require('fs/promises')
-const { DB_PATH, START_COINS, START_SLOTS, CROPS } = require('./config')
+const { DB_PATH, START_COINS, START_SLOTS, CROPS, SLOT_TOTAL_MAX } = require('./config')
 const logic = require('./logic')
 
 /**
@@ -11,23 +11,31 @@ const logic = require('./logic')
  * @returns {Object}
  */
 function _newUser(userId) {
-    const refCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const refCode = Math.random().toString(36).substring(2, 8).toUpperCase()
     return {
         id: userId,
-        refCode: refCode,
+        refCode,
         username: 'unknown',
         nickname: 'Игрок',
-        createdAt: Math.floor(logic.time.now() / 1000),
+        createdAt: logic.time.now(),
         coin: START_COINS,
         leaves: 0,
         slots: Array(START_SLOTS).fill(null),
         last_collection: 0,
-        stats: {
-            bestHarvest: 0,
-            bestCrop: null,
-            bestMutation: null,
-            bestWeight: 0,
-        },
+
+        stats: { bestHarvest: 0, bestCrop: null, bestMutation: null, bestWeight: 0 },
+
+        allTimeBestHarvest: 0,
+        allTimeBestCrop: null,
+        allTimeBestMutation: null,
+        allTimeBestWeight: 0,
+
+        upgrades: { genetics: 0, selection: 0, agronomy: 0, land: 0 },
+        upgradeCooldowns: { genetics: 0, selection: 0, agronomy: 0, land: 0 },
+
+        weeklyChampionUntil: 0,
+        weeklyChampionWeek: 0,
+
         referredBy: null,
         referralCount: 0,
         vipUntil: 0,
@@ -110,110 +118,103 @@ function _withLock(fn) {
  */
 function normalizeUser(user, userId) {
     let changed = false
-    if (user.id !== userId) {
-        user.id = userId
-        changed = true
-    }
+
+    // ===== БАЗОВЫЕ ПОЛЯ =====
+    if (user.id !== userId) { user.id = userId; changed = true }
     if (!user.refCode) {
-        user.refCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-        changed = true;
+        user.refCode = Math.random().toString(36).substring(2, 8).toUpperCase()
+        changed = true
     }
     if (typeof user.username !== 'string' || !user.username) {
-        user.username = 'unknown'
-        changed = true
+        user.username = 'unknown'; changed = true
     }
     if (typeof user.nickname !== 'string' || !user.nickname || user.nickname.split(' ').length > 3) {
-        user.nickname = 'Игрок'
-        changed = true
+        user.nickname = 'Игрок'; changed = true
     }
     if (!Number.isInteger(user.createdAt)) {
-        user.createdAt = Math.floor(Date.now() / 1000)
-        changed = true
+        user.createdAt = Math.floor(Date.now() / 1000); changed = true
     }
     if (!Number.isInteger(user.coin) || user.coin < 0) {
-        user.coin = START_COINS
-        changed = true
+        user.coin = START_COINS; changed = true
     }
-    if (!Array.isArray(user.slots)) {
-        user.slots = Array(START_SLOTS).fill(null)
-        changed = true
+    if (!Number.isInteger(user.last_collection) || user.last_collection < 0) {
+        user.last_collection = 0; changed = true
     }
+
+    // ===== SLOTS =====
+    if (!Array.isArray(user.slots)) { user.slots = Array(START_SLOTS).fill(null); changed = true }
     if (user.slots.length < START_SLOTS) {
-        const need = START_SLOTS - user.slots.length
-        user.slots.push(...Array(need).fill(null))
-        changed = true
+        user.slots.push(...Array(START_SLOTS - user.slots.length).fill(null)); changed = true
     }
     for (let i = 0; i < user.slots.length; i++) {
         const slot = user.slots[i]
         if (slot === null) continue
-        if (typeof slot !== 'object' || Array.isArray(slot)) {
-            user.slots[i] = null
-            changed = true
-            continue
-        }
-        if (!slot.crop || !Number.isInteger(slot.plantedAt)) {
-            user.slots[i] = null
-            changed = true
-            continue
-        }
-        if (!CROPS[slot.crop]) {
-            user.slots[i] = null
-            changed = true
-        }
+        if (typeof slot !== 'object' || Array.isArray(slot)) { user.slots[i] = null; changed = true; continue }
+        if (!slot.crop || !Number.isInteger(slot.plantedAt)) { user.slots[i] = null; changed = true; continue }
+        if (!CROPS[slot.crop]) { user.slots[i] = null; changed = true }
     }
-    if (!Number.isInteger(user.last_collection) || user.last_collection < 0 || !user.last_collection){
-        user.last_collection = 0
-        changed = true
-    }
+
+    // ===== STATS =====
     if (!user.stats || typeof user.stats !== 'object' || Array.isArray(user.stats)) {
         user.stats = { bestHarvest: 0, bestCrop: null, bestMutation: null, bestWeight: 0 }
         changed = true
     }
     if (!Number.isInteger(user.stats.bestHarvest) || user.stats.bestHarvest < 0) {
-        user.stats.bestHarvest = 0
-        changed = true
+        user.stats.bestHarvest = 0; changed = true
     }
     if (typeof user.stats.bestWeight !== 'number' || !isFinite(user.stats.bestWeight) || user.stats.bestWeight < 0) {
-        user.stats.bestWeight = 0
-        changed = true
+        user.stats.bestWeight = 0; changed = true
     }
-    if (user.referredBy === undefined) {
-        user.referredBy = null
-        changed = true
-    }
-    if (!Number.isInteger(user.referralCount)) {
-        user.referralCount = 0
-        changed = true
-    }
-    if (!Number.isInteger(user.vipUntil)) {
-        user.vipUntil = 0
-        changed = true
-    }
-    if (!Array.isArray(user.usedPromos)) {
-        user.usedPromos = []
-        changed = true
-    }
+
+    // ===== РЕФЕРАЛЫ / VIP =====
+    if (user.referredBy === undefined) { user.referredBy = null; changed = true }
+    if (!Number.isInteger(user.referralCount)) { user.referralCount = 0; changed = true }
+    if (!Number.isInteger(user.vipUntil)) { user.vipUntil = 0; changed = true }
+    if (!Array.isArray(user.usedPromos)) { user.usedPromos = []; changed = true }
+
+    // ===== ИВЕНТОВОЕ =====
     if (user.leaves === undefined || !Number.isInteger(user.leaves) || user.leaves < 0) {
-        user.leaves = 0;
-        changed = true;
+        user.leaves = 0; changed = true
     }
-    if (user.strawHat === undefined || typeof user.strawHat !== 'boolean') {
-        user.strawHat = false;
-        changed = true;
-    }
-    if (!Array.isArray(user.ownedTitles)) {
-        user.ownedTitles = [];
-        changed = true;
-    }
+    if (typeof user.strawHat !== 'boolean') { user.strawHat = false; changed = true }
+    if (!Array.isArray(user.ownedTitles)) { user.ownedTitles = []; changed = true }
     if (user.activeTitle === undefined || (typeof user.activeTitle !== 'string' && user.activeTitle !== null)) {
-        user.activeTitle = null;
-        changed = true;
+        user.activeTitle = null; changed = true
     }
-    if(!logic.event.isEventActive()){
-        user.coin = user.leaves * 1000 + user.coin
-        delete user.leaves
+
+    // ===== ЛАБОРАТОРИЯ — всегда, после миграций =====
+    if (!user.upgrades || typeof user.upgrades !== 'object' || Array.isArray(user.upgrades)) {
+        user.upgrades = { genetics: 0, selection: 0, agronomy: 0, land: 0 }
         changed = true
     }
+    for (const key of ['genetics', 'selection', 'agronomy', 'land']) {
+        if (!Number.isInteger(user.upgrades[key]) || user.upgrades[key] < 0) {
+            user.upgrades[key] = 0
+            changed = true
+        }
+    }
+    const landLevel = user.upgrades?.land ?? 0
+    if (landLevel > 0) {
+        const minExpected = Math.min(START_SLOTS + landLevel, SLOT_TOTAL_MAX)
+        if (user.slots.length < minExpected) {
+            while (user.slots.length < minExpected) {
+                user.slots.push(null)
+            }
+            changed = true
+            console.log(`[SLOTS] user=${userId} land=${landLevel} slots → ${user.slots.length}`)
+        }
+    }
+    if (!user.upgradeCooldowns || typeof user.upgradeCooldowns !== 'object' || Array.isArray(user.upgradeCooldowns)) {
+        user.upgradeCooldowns = { genetics: 0, selection: 0, agronomy: 0, land: 0 }
+        changed = true
+    }
+    for (const key of ['genetics', 'selection', 'agronomy', 'land']) {
+        if (!Number.isInteger(user.upgradeCooldowns[key]) || user.upgradeCooldowns[key] < 0) {
+            user.upgradeCooldowns[key] = 0
+            changed = true
+        }
+    }
+
     return changed
 }
 

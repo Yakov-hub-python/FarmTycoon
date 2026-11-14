@@ -56,8 +56,8 @@ function harvestSlot(user, index) {
     const left = time.timeLeft(slot, user)
     if (left > 0) return { ok: false, error: 'not_ready', left }
 
-    const weight = rollWeight(slot.crop)
-    const mutation = mutations.rollMutation()
+    const weight = rollWeight(slot.crop) * (1 + user.upgrades.selection * 0.05)
+    const mutation = mutations.rollMutation(user)
     
     // Берем множитель цены из слота
     const sellMult = slot.weatherSell || 1.0 

@@ -14,6 +14,7 @@ const SLOT_BASE_PRICE  = 5000
 const SLOT_PRICE_MULT  = 3
 const SLOT_PRICE_FIRST = 9
 const SLOT_MAX_COUNT = 16
+const SLOT_TOTAL_MAX = 20
 
 // ===== КУЛЬТУРЫ =====
 const CROPS = {
@@ -79,21 +80,94 @@ const CROP_ORDER = [
 // ===== МУТАЦИИ =====
 const MUTATIONS = {
     'common': { name: 'Обычная', emoji: '', chance: 0.85, mult: 1.0 },
-    'silver': { name: 'Серебряная', emoji: '✨', chance: 0.12, mult: 2.0 },
-    'gold': { name: 'Золотая', emoji: '🌟', chance: 0.03, mult: 6.0 }
+    'silver': { name: 'Серебряная', emoji: '✨', chance: 0.12, mult: 1.75 },
+    'gold': { name: 'Золотая', emoji: '🌟', chance: 0.03, mult: 4.5 }
 }
 
 const MUTATION_ROLL_ORDER = ['gold', 'silver', 'common']
 const MUTATION_RANK = { common: 0, silver: 1, gold: 2 }
 
+// ===== ПОГОДА =====
+const EVENTS = [
+    {
+        name: 'Ясно',
+        emoji: '☀️',
+        growthMult: 1.0,
+        sellMult: 1.0,
+        desc: 'Обычный день на ферме.'
+    },
+    {
+        name: 'Дождь',
+        emoji: '🌧',
+        growthMult: 0.8,
+        sellMult: 1.0,
+        desc: 'Рост ускорен на 20%!'
+    },
+    {
+        name: 'Засуха',
+        emoji: '🔥',
+        growthMult: 1.2,
+        sellMult: 1.4,
+        desc: 'Рост замедлен, но продажа +40%!'
+    }
+]
+
 // ===== VIP =====
 const VIP_BONUS_MULT = 1.2
+
 // ===== ТИТУЛЫ =====
 const TITLES = {
     'autumn_magnate': { name: '🍂 Осенний Магнат', emoji: '🍂' },
     'lucky': { name: '🎰 Счастливчик', emoji: '🎰' }
 }
 
+// ===== ЛАБОРАТОРИЯ =====
+const LAB_UPGRADES = {
+    genetics: {
+        name: 'Генетика',
+        emoji: '🧬',
+        desc: 'Повышает шанс золотой мутации',
+        effectType: 'goldChance',
+        effectPerLevel: 0.005,
+        basePrice: 30000,
+        priceMultiplier: 2,
+        maxLevel: 8,
+        cooldownSec: 1800,
+    },
+    selection: {
+        name: 'Селекция',
+        emoji: '🌾',
+        desc: 'Увеличивает вес урожая',
+        effectType: 'weight',
+        effectPerLevel: 0.05,
+        basePrice: 20000,
+        priceMultiplier: 2,
+        maxLevel: 8,
+        cooldownSec: 1800,
+    },
+    agronomy: {
+        name: 'Агрономия',
+        emoji: '⏱',
+        desc: 'Ускоряет рост культур',
+        effectType: 'growthSpeed',
+        effectPerLevel: 0.05,
+        basePrice: 700000,
+        priceMultiplier: 2.5,
+        maxLevel: 4,
+        cooldownSec: 3600,
+    },
+    land: {
+        name: 'Земля',
+        emoji: '🟫',
+        desc: 'Добавляет грядки',
+        effectType: 'slots',
+        effectPerLevel: 1,
+        basePrice: 700000,
+        priceMultiplier: 2.5,
+        maxLevel: 4,
+        cooldownSec: 3600,
+    },
+}
 // ===== ОСЕННИЙ ИВЕНТ =====
 const EVENT_PRICES = {
     mushroom: 50,
@@ -107,10 +181,10 @@ const EVENT_END_TIMESTAMP = new Date('2026-12-01T00:00:00+03:00').getTime()
 module.exports = {    
     BOT_TOKEN, DB_PATH, ADMIN_ID,
     START_COINS, START_SLOTS,
-    SLOT_BASE_PRICE, SLOT_PRICE_MULT, SLOT_PRICE_FIRST, SLOT_MAX_COUNT,
+    SLOT_BASE_PRICE, SLOT_PRICE_MULT, SLOT_PRICE_FIRST, SLOT_MAX_COUNT, SLOT_TOTAL_MAX,
     CROPS, CROP_ORDER,
     MUTATIONS, MUTATION_ROLL_ORDER, MUTATION_RANK,
-    VIP_BONUS_MULT,
-    TITLES, 
+    VIP_BONUS_MULT, EVENTS,
+    TITLES, LAB_UPGRADES,
     EVENT_PRICES, EVENT_END_TIMESTAMP
 }

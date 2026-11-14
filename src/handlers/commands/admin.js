@@ -1,6 +1,13 @@
 const fs = require('fs/promises') // 👈 Вот он, тот самый модуль!
 const { ADMIN_ID, DB_PATH } = require('../../service/config')
 const { isAdmin } = require('../../utils/isAdmin')
+const db = require('../../service/db')
+const logic = require('../../service/logic')
+
+const LIMITS = {
+    vip:  { min: 1, max: 30,        label: 'дн.' },
+    coin: { min: 1, max: 1000000, label: 'монет' },
+}
 
 /**
  * /give_admin <id или ответ на сообщение> <сумма>
@@ -31,23 +38,97 @@ async function giveCoinsHandler(ctx) {
         return ctx.reply('❌ Сумма должна быть числом (и не нулем).')
     }
 
-    // Здесь мы используем db, но так как в admin.js нет импорта db, 
-    // мы делаем это через fs (читаем и пишем файл напрямую) или 
-    // импортируем storage. Предположим, ты импортировал db/storage.
-    // Если нет, лучше использовать storage.
-    const storage = require('../../service/db') 
-    const user = await storage.getUser(targetId, null) 
+    const user = await db.getUser(targetId, null) 
     user.coin += amount
     
     if (user.coin < 0) user.coin = 0 
     
-    await storage.saveUser(targetId, user)
+    await db.saveUser(targetId, user)
 
     await ctx.reply(
         `✅ Игроку <code>${targetId}</code> выдано <b>${amount}</b> монет.\n` +
         `Текущий баланс: ${user.coin}`,
         { parse_mode: 'HTML' }
     )
+}
+
+async function giveallHandler(ctx) {
+    // Тихая проверка админа — не палим команду
+    if (!isAdmin(ctx)) return
+
+    const args = ctx.message.text.split(/\s+/).slice(1)
+    const [type, amountRaw] = args
+
+    // ===== ВАЛИДАЦИЯ =====
+    if (!type || !amountRaw) {
+        return ctx.reply(
+            '❌ Формат: <code>/giveall &lt;vip|coin&gt; &lt;amount&gt;</code>\n' +
+            'Пример: <code>/giveall vip 3</code>',
+            { parse_mode: 'HTML' }
+        )
+    }
+
+    if (type !== 'vip' && type !== 'coin') {
+        return ctx.reply('❌ Тип должен быть <code>vip</code> или <code>coin</code>', { parse_mode: 'HTML' })
+    }
+
+    const amount = Number(amountRaw)
+    if (!Number.isInteger(amount) || amount <= 0) {
+        return ctx.reply('❌ Amount должен быть целым числом > 0')
+    }
+
+    const lim = LIMITS[type]
+    if (amount < lim.min || amount > lim.max) {
+        return ctx.reply(
+            `❌ Для <b>${type}</b> допустимо от ${lim.min} до ${logic.format.formatNumber(lim.max)} ${lim.label}`,
+            { parse_mode: 'HTML' }
+        )
+    }
+
+    // ===== ВЫПОЛНЕНИЕ =====
+    const users = await db.getAllUsers()
+    if (users.length === 0) {
+        return ctx.reply('❌ В базе нет игроков')
+    }
+
+    let sent = 0
+    let skipped = 0
+    const errors = []
+
+    for (const user of users) {
+        try {
+            if (type === 'vip') {
+                logic.vip.addVipDays(user, amount, 'admin_giveall')
+            } else {
+                user.coin = (user.coin || 0) + amount
+            }
+            await db.saveUser(user.id, user)
+            sent++
+            console.log(`[GIVEALL] user=${user.id} type=${type} amount=${amount} by=${ctx.from.id}`)
+        } catch (e) {
+            skipped++
+            errors.push(`${user.id}: ${e.message}`)
+            console.error(`[GIVEALL] failed user=${user.id}: ${e.message}`)
+        }
+    }
+
+    // ===== ОТЧЁТ =====
+    const typeLabel = type === 'vip' ? '👑 VIP' : '💰 Монеты'
+    const amountLabel = type === 'vip' ? `+${amount} дн.` : `+${logic.format.formatNumber(amount)} монет`
+
+    let report =
+        `✅ <b>Готово</b>\n\n` +
+        `Тип: ${typeLabel}\n` +
+        `Количество: <b>${amountLabel}</b>\n` +
+        `Получили: <b>${sent}</b>\n` +
+        `Пропущено: <b>${skipped}</b>\n` +
+        `Всего: <b>${users.length}</b>`
+
+    if (errors.length > 0 && errors.length <= 5) {
+        report += `\n\n⚠️ Ошибки:\n<code>${errors.join('\n')}</code>`
+    }
+
+    await ctx.reply(report, { parse_mode: 'HTML' })
 }
 
 /**
@@ -63,7 +144,7 @@ async function sayHandler(ctx) {
     }
 
     const storage = require('../../service/db')
-    const users = await storage.getAllUsers()
+    const users = await db.getAllUsers()
     await ctx.reply(`🚀 Начинаю рассылку для ${users.length} игроков...`)
 
     let success = 0
@@ -165,6 +246,7 @@ async function newPromoHandler(ctx) {
 
 module.exports = { 
     giveCoinsHandler, 
+    giveallHandler,
     sayHandler, 
     resetStatsHandler,
     newPromoHandler

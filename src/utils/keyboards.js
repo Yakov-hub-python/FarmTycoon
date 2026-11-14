@@ -32,6 +32,7 @@ function mainMenuKb() {
             Markup.button.callback('ℹ️ Помощь', 'help')
         ],
         [Markup.button.callback('🤝 Друзья', 'friends')],
+        [Markup.button.callback('🧪 Лаборатория', 'lab')],
         logic.event.isEventActive()?[Markup.button.callback('🍂 Праздник Урожая', 'event')]: []
     ])
 }
@@ -81,7 +82,7 @@ function farmKb(user) {
         Markup.button.callback('🛒 Магазин', 'shop'),
     ])
     
-    if(user.slots.length < config.SLOT_MAX_COUNT){
+    if(user.slots.length < config.SLOT_MAX_COUNT ){
         rows.push([
             Markup.button.callback(
                 `🟫 Расширить (${logic.format.formatNumber(logic.expansion.nextSlotPrice(user))})`, 
@@ -208,16 +209,74 @@ function profileKb() {
     ])
 }
 
+/**
+ * Текст кнопки для одной ветки + callback_data.
+ * @returns {{ text: string, cb: string }}
+ */
+function _upgradeButton(user, key) {
+    const cfg = config.LAB_UPGRADES[key]
+    const level = user.upgrades?.[key] ?? 0
+    const price = logic.upgrades.getUpgradePrice(user, key)
+    const cd = logic.upgrades.getUpgradeCooldownLeft(user, key)
+
+    // MAX
+    if (level >= cfg.maxLevel) {
+        return { text: `${cfg.emoji} ${cfg.name} · MAX`, cb: 'lab_noop' }
+    }
+
+    // Кулдаун — кнопка кликабельна, но ведёт на noop (отвечаем через answerCbQuery)
+    if (cd > 0) {
+        return {
+            text: `${cfg.emoji} ${cfg.name} · ⏱ ${logic.format.formatTime(cd)}`,
+            cb: `lab_cd_${key}`,
+        }
+    }
+
+    // Не хватает монет — тоже кликабельна, но noop
+    if (price !== null && user.coin < price) {
+        return {
+            text: `${cfg.emoji} ${cfg.name} · 💰 ${logic.format.formatNumber(price)}`,
+            cb: `lab_poor_${key}`,
+        }
+    }
+
+    // Доступно
+    return {
+        text: `${cfg.emoji} ${cfg.name} · ${logic.format.formatNumber(price)}`,
+        cb: `lab_buy_${key}`,
+    }
+}
+
+/**
+ * Inline-клавиатура экрана лаборатории.
+ * @param {Object} user
+ * @returns {Object} Telegraf keyboard
+ */
+function upgradeKb(user) {
+    const order = ['genetics', 'selection', 'agronomy', 'land']
+
+    // 2×2 сетка веток
+    const row1 = order.slice(0, 2).map(k => {
+        const b = _upgradeButton(user, k)
+        return Markup.button.callback(b.text, b.cb)
+    })
+    const row2 = order.slice(2, 4).map(k => {
+        const b = _upgradeButton(user, k)
+        return Markup.button.callback(b.text, b.cb)
+    })
+
+    // Управление
+    const row3 = [
+        Markup.button.callback('🔄 Обновить', 'lab_refresh'),
+        Markup.button.callback('⬅️ Назад', 'menu'),
+    ]
+
+    return Markup.inlineKeyboard([row1, row2, row3])
+}
+
 // ===== ЭКСПОРТ =====
 module.exports = {
-    mainMenuKb,
-    backKb,
-    afterHarvestKb,
-    farmKb,
-    shopKb,
-    topsKb,
-    friendsKb,
-    eventKb,
-    titlesKb,
-    profileKb,
+    mainMenuKb, backKb, afterHarvestKb, farmKb,
+    shopKb, topsKb, friendsKb, eventKb, titlesKb, 
+    profileKb, upgradeKb
 }

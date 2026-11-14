@@ -1,6 +1,6 @@
 require('dotenv').config()
 const { Telegraf } = require('telegraf')
-const { BOT_TOKEN } = require('./service/config')
+const { BOT_TOKEN, ADMIN_ID } = require('./service/config')
 const http = require('http');
 const registerCommands  = require('./handlers/commands/commands')
 const registerCallbacks = require('./handlers/callback/callback')
@@ -30,7 +30,9 @@ server.listen(PORT, () => {
     console.log('HTTP', `✅ Сервер на порту ${PORT}`);
 });
 
-bot.launch()
+bot.launch().then(() => {
+    bot.telegram.sendMessage(ADMIN_ID, '✅ Бот запущен!').catch(() => {})
+})
 console.log('Бот запущен')
 
 process.once('SIGINT',  () => bot.stop('SIGINT'))
