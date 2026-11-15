@@ -1,9 +1,24 @@
 require('dotenv').config()
 
+// ===== ТЕХНИЧЕСКИЕ =====
 const BOT_TOKEN = process.env.BOT_TOKEN
 if (!BOT_TOKEN) throw new Error('BOT_TOKEN не задан в .env')
 const DB_PATH = process.env.DB_PATH || 'database.json'
 const ADMIN_ID = String(process.env.ADMIN_ID || '')
+
+const TIME_UNITS = [
+    { label: 'д', sec: 24 * 60 * 60 },
+    { label: 'ч', sec: 60 * 60 },
+    { label: 'м', sec: 60 },
+    { label: 'с', sec: 1 },
+];
+
+const NUMBER_UNITS = [
+    { label: 'трлн', value: 1_000_000_000_000 },
+    { label: 'млрд', value: 1_000_000_000 },
+    { label: 'млн',  value: 1_000_000 },
+    { label: 'тыс',  value: 1_000 },
+]
 
 // ===== СТАРТ =====
 const START_COINS = 1000
@@ -19,52 +34,52 @@ const SLOT_TOTAL_MAX = 20
 // ===== КУЛЬТУРЫ =====
 const CROPS = {
     'wheat': {
-        name: 'Пшеница', emoji: '🌾', growTime: 15, seed: 100,
-        minWeightKG: 1.0, maxWeightKG: 3.0, pricePerKG: 60
+        name: 'Пшеница', emoji: '🌾', growTime: 15, seed: 15,
+        minWeightKG: 1.0, maxWeightKG: 3.0, pricePerKG: 20
     },
     'cucumber': {
-        name: 'Огурец', emoji: '🥒', growTime: 30, seed: 250,
-        minWeightKG: 1.5, maxWeightKG: 3.5, pricePerKG: 120
+        name: 'Огурец', emoji: '🥒', growTime: 30, seed: 40,
+        minWeightKG: 1.5, maxWeightKG: 3.5, pricePerKG: 40
     },
     'carrot': {
-        name: 'Морковь', emoji: '🥕', growTime: 90, seed: 500,
-        minWeightKG: 2.0, maxWeightKG: 5.0, pricePerKG: 170
+        name: 'Морковь', emoji: '🥕', growTime: 90, seed: 100,
+        minWeightKG: 2.0, maxWeightKG: 5.0, pricePerKG: 60
     },
     'strawberry': {
-        name: 'Клубника', emoji: '🍓', growTime: 300, seed: 1500,
-        minWeightKG: 0.5, maxWeightKG: 2.5, pricePerKG: 1200
-    },
-    'pumpkin': {
-        name: 'Тыква', emoji: '🎃', growTime: 450, seed: 3000,
-        minWeightKG: 5.0, maxWeightKG: 15.0, pricePerKG: 360
-    },
-    'tomato': {
-        name: 'Помидор', emoji: '🍅', growTime: 900, seed: 8000,
-        minWeightKG: 2.0, maxWeightKG: 6.0, pricePerKG: 2400
-    },
-    'watermelon': {
-        name: 'Арбуз', emoji: '🍉', growTime: 1800, seed: 20000,
-        minWeightKG: 10.0, maxWeightKG: 25.0, pricePerKG: 1370
-    },
-    'grape': {
-        name: 'Виноград', emoji: '🍇', growTime: 7200, seed: 100000,
-        minWeightKG: 5.0, maxWeightKG: 15.0, pricePerKG: 12000
-    },
-    'pineapple': {
-        name: 'Ананас', emoji: '🍍', growTime: 14400, seed: 500000,
-        minWeightKG: 10.0, maxWeightKG: 30.0, pricePerKG: 30000
+        name: 'Клубника', emoji: '🍓', growTime: 300, seed: 400,
+        minWeightKG: 0.5, maxWeightKG: 2.5, pricePerKG: 500
     },
     'pepper': {
-        name: 'Перец', emoji: '🌶', growTime: 360, seed: 2000,
-        minWeightKG: 0.5, maxWeightKG: 1.5, pricePerKG: 1600
+        name: 'Перец', emoji: '🌶', growTime: 360, seed: 500,
+        minWeightKG: 0.5, maxWeightKG: 1.5, pricePerKG: 800
+    },
+    'pumpkin': {
+        name: 'Тыква', emoji: '🎃', growTime: 450, seed: 800,
+        minWeightKG: 5.0, maxWeightKG: 15.0, pricePerKG: 120
+    },
+    'tomato': {
+        name: 'Помидор', emoji: '🍅', growTime: 900, seed: 2000,
+        minWeightKG: 2.0, maxWeightKG: 6.0, pricePerKG: 800
     },
     'corn': {
-        name: 'Кукуруза', emoji: '🌽', growTime: 1200, seed: 12000,
-        minWeightKG: 3.0, maxWeightKG: 8.0, pricePerKG: 2500
+        name: 'Кукуруза', emoji: '🌽', growTime: 1200, seed: 3000,
+        minWeightKG: 3.0, maxWeightKG: 8.0, pricePerKG: 1000
+    },
+    'watermelon': {
+        name: 'Арбуз', emoji: '🍉', growTime: 1800, seed: 5000,
+        minWeightKG: 10.0, maxWeightKG: 25.0, pricePerKG: 600
     },
     'peach': {
-        name: 'Персик', emoji: '🍑', growTime: 3600, seed: 40000,
-        minWeightKG: 0.2, maxWeightKG: 0.8, pricePerKG: 100000
+        name: 'Персик', emoji: '🍑', growTime: 3600, seed: 12000,
+        minWeightKG: 0.2, maxWeightKG: 0.8, pricePerKG: 40000
+    },
+    'grape': {
+        name: 'Виноград', emoji: '🍇', growTime: 7200, seed: 30000,
+        minWeightKG: 5.0, maxWeightKG: 15.0, pricePerKG: 4000
+    },
+    'pineapple': {
+        name: 'Ананас', emoji: '🍍', growTime: 14400, seed: 100000,
+        minWeightKG: 10.0, maxWeightKG: 30.0, pricePerKG: 10000
     },
     'mushroom': {
         name: 'Гриб', emoji: '🍄', growTime: 3600, seed: 0,
@@ -179,7 +194,7 @@ const EVENT_PRICES = {
 const EVENT_END_TIMESTAMP = new Date('2026-12-01T00:00:00+03:00').getTime()
 // ===== ЭКСПОРТ =====
 module.exports = {    
-    BOT_TOKEN, DB_PATH, ADMIN_ID,
+    BOT_TOKEN, DB_PATH, ADMIN_ID, TIME_UNITS, NUMBER_UNITS,
     START_COINS, START_SLOTS,
     SLOT_BASE_PRICE, SLOT_PRICE_MULT, SLOT_PRICE_FIRST, SLOT_MAX_COUNT, SLOT_TOTAL_MAX,
     CROPS, CROP_ORDER,

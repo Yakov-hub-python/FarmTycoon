@@ -12,7 +12,7 @@ function _slotLabel(i, slot, user) {
     const crop = CROPS[slot.crop]
     if (!crop) return `🌱 Слот ${i + 1}: пусто`
     const left = logic.time.timeLeft(slot, user)
-    if (left > 0) return `${crop.emoji} ${logic.format.formatTime(left)}`
+    if (left > 0) return `${crop.emoji} ${logic.format.formatShortTime(left)}`
     return `✅ Собрать ${crop.emoji}`
 }
 
@@ -78,14 +78,12 @@ function farmKb(user) {
     }
 
     // 3. Магазин и Расширение
-    rows.push([
-        Markup.button.callback('🛒 Магазин', 'shop'),
-    ])
+    
     
     if(user.slots.length < config.SLOT_MAX_COUNT ){
         rows.push([
             Markup.button.callback(
-                `🟫 Расширить (${logic.format.formatNumber(logic.expansion.nextSlotPrice(user))})`, 
+                `🟫 Расширить (${logic.format.formatShortNumber(logic.expansion.nextSlotPrice(user), 3)})`, 
                 'expand'
             ),
         ])
@@ -97,6 +95,7 @@ function farmKb(user) {
 
     // 5. В меню
     rows.push([
+        Markup.button.callback('🛒 Магазин', 'shop'),
         Markup.button.callback('⬅️ В меню', 'menu'),
     ])
 
@@ -123,7 +122,7 @@ function shopKb(count = 1) {
     const seedBtns = CROP_ORDER.map(key => {
         const crop = CROPS[key]
         return Markup.button.callback(
-            `${crop.emoji} ${logic.format.formatNumber(crop.seed * count)}`,
+            `${crop.emoji} ${logic.format.formatShortNumber(crop.seed * count)}`,
             `plant:${key}:${count}`
         )
     })
@@ -227,7 +226,7 @@ function _upgradeButton(user, key) {
     // Кулдаун — кнопка кликабельна, но ведёт на noop (отвечаем через answerCbQuery)
     if (cd > 0) {
         return {
-            text: `${cfg.emoji} ${cfg.name} · ⏱ ${logic.format.formatTime(cd)}`,
+            text: `${cfg.emoji} · ⏱ ${logic.format.formatShortTime(cd)}`,
             cb: `lab_cd_${key}`,
         }
     }
@@ -235,14 +234,14 @@ function _upgradeButton(user, key) {
     // Не хватает монет — тоже кликабельна, но noop
     if (price !== null && user.coin < price) {
         return {
-            text: `${cfg.emoji} ${cfg.name} · 💰 ${logic.format.formatNumber(price)}`,
+            text: `${cfg.emoji} · 💰 ${logic.format.formatShortNumber(price, 3)}`,
             cb: `lab_poor_${key}`,
         }
     }
 
     // Доступно
     return {
-        text: `${cfg.emoji} ${cfg.name} · ${logic.format.formatNumber(price)}`,
+        text: `${cfg.emoji} · ${logic.format.formatShortNumber(price, 3)}`,
         cb: `lab_buy_${key}`,
     }
 }

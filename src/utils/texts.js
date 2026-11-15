@@ -38,47 +38,40 @@ const WELCOME = '🌾 <b>FARM TYCOON</b>\n\n' +
     '👇 Жми кнопку ниже, чтобы начать:'
 
 const HELP = 'ℹ️ <b>СПРАВКА ПО ИГРЕ</b>\n\n' +
-    'Добро пожаловать на ферму! Твоя цель — сажать культуры, собирать их и богатеть.\n\n' +
-    
+    'Твоя цель — растить культуры, собирать урожай и богатеть. Вот всё, что нужно знать для старта.\n\n' +
+
+    '<b>🌱 Основы</b>\n' +
+    '1. Зайди в <b>🌾 Моя ферма</b> и посади семена.\n' +
+    '2. Подожди, пока таймер закончится.\n' +
+    '3. Нажми «Собрать» и получи монеты.\n' +
+    'Трать монеты на новые семена и расширение фермы!\n\n' +
+
     '<b>🌦 Погода</b>\n' +
-    'Меняется каждые 2 часа. <b>Дождь</b> ускоряет рост, <b>Засуха</b> повышает цены на продажу, <b>Ясно</b> — стандарт. Погода запоминается в момент посадки!\n\n' +
-    
-    '<b>💎 VIP и Рефералы</b>\n' +
-    '• VIP дает <b>+20%</b> к прибыли за каждый сбор.\n' +
-    '• За друга вы получаете 5.000 монет, а друг — 1.500.\n' +
-    '• За каждые <b>3 приглашенных</b> друга вы получаете <b>7 дней VIP</b>!\n' +
-    'Ссылка: в меню «🤝 Друзья».\n\n' +
-    
-    '<b>🎟 Промокоды</b>\n' +
-    'Вводи коды командой <code>/promo КОД</code>. Ищи их в канале @dedayson_news!\n\n' +
-    
-    '<b>🌱 Культуры (время / цена семян)</b>\n' +
-    '🌾 Пшеница — 15с / 100\n' +
-    '🥒 Огурец — 30с / 250\n' +
-    '🥕 Морковь — 1.5м / 500\n' +
-    '🍓 Клубника — 5м / 1.500\n' +
-    '🌶 Перец — 6м / 2.000\n' +
-    '🎃 Тыква — 7.5м / 3.000\n' +
-    '🍅 Помидор — 15м / 8.000\n' +
-    '🌽 Кукуруза — 20м / 12.000\n' +
-    '🍉 Арбуз — 30м / 20.000\n' +
-    '🍑 Персик — 1ч / 40.000\n' +
-    '🍇 Виноград — 2ч / 100.000\n' +
-    '🍍 Ананас — 4ч / 500.000\n\n' +
-    
+    'Меняется каждые 2 часа. <b>Дождь</b> ускоряет рост, <b>Засуха</b> повышает цену продажи, <b>Ясно</b> — нейтрально. Погода фиксируется в момент посадки!\n\n' +
+
     '<b>🧬 Мутации</b>\n' +
-    'Обычная — 85% (×1)\n' +
-    '✨ Серебряная — 12% (×2)\n' +
-    '🌟 Золотая — 3% (×6)\n\n' +
-    
-    '<b>⚖️ Вес</b>\n' +
-    'Каждый плод имеет свой вес. Чем тяжелее — тем больше монет!\n\n' +
-    
+    'Каждый сбор может дать мутацию:\n' +
+    '✨ Серебряная — ×1.75 к цене\n' +
+    '🌟 Золотая — ×4.5 к цене (выпадает редко!)\n\n' +
+
+    '<b>🧪 Лаборатория</b>\n' +
+    'Главный способ усилить ферму. Открывай <b>/lab</b> и прокачивай ветки:\n' +
+    '🧬 Генетика — шанс золотой мутации\n' +
+    '🌾 Селекция — вес урожая\n' +
+    '⏱ Агрономия — скорость роста\n' +
+    '🟫 Земля — доп. грядки (всего до 20 слотов)\n' +
+    '<i>У веток есть кулдаун между покупками.</i>\n\n' +
+
+    '<b>💎 VIP и Друзья</b>\n' +
+    '• VIP даёт <b>+20%</b> к прибыли за каждый сбор.\n' +
+    '• За друга вы получаете 5.000 монет, когда он соберёт 5 урожаев. Друг — 1.500 на старт.\n' +
+    'Ссылка в меню «🤝 Друзья».\n\n' +
+
     '<b>🕹 Команды</b>\n' +
-    '/start — запуск бота\n' +
+    '/start — перезапуск бота\n' +
     '/menu — главное меню\n' +
-    '/me — профиль\n' +
-    '/promo — активировать код\n' +
+    '/me — профиль и рекорды\n' +
+    '/promo — активировать код (ищи в @dedayson_news)\n' +
     '/help — эта справка';
 
 const PLANT_ERRORS = {
@@ -216,7 +209,7 @@ function topCoinsText(users) {
     if (users.length === 0) return '💰 <b>ТОП БОГАЧЕЙ</b>\n\nПока пусто.'
 
     const lines = users.map((user, i) =>
-        `${i + 1}. <b>${displayName(user)}</b> — ${logic.format.formatNumber(user.coin)} монет`
+        `${i + 1}. <b>${displayName(user)}</b> — ${logic.format.formatShortNumber(user.coin)} монет`
     )
 
     return `💰 <b>ТОП БОГАЧЕЙ</b>\n(Текущий баланс)\n\n${lines.join('\n')}`
@@ -234,7 +227,7 @@ function topHarvestText(users) {
         const mutation = MUTATIONS[user.stats.bestMutation]
 
         if (!crop || !mutation) {
-            return `${i + 1}. <b>${name}</b> — ${logic.format.formatNumber(user.stats.bestHarvest)}`
+            return `${i + 1}. <b>${name}</b> — ${logic.format.formatShortNumber(user.stats.bestHarvest)}`
         }
 
         const mutText = mutation.emoji ? `${mutation.emoji} ` : ''
@@ -242,7 +235,7 @@ function topHarvestText(users) {
         const weight = Number(user.stats.bestWeight) || 0
         const weightText = weight > 0 ? ` ${weight.toFixed(1)} кг` : ''
 
-        return `${i + 1}. <b>${name}</b> — ${logic.format.formatNumber(user.stats.bestHarvest)} (${cropText}${weightText})`
+        return `${i + 1}. <b>${name}</b> — ${logic.format.formatShortNumber(user.stats.bestHarvest)} (${cropText}${weightText})`
     })
 
     return `🏆 <b>ТОП УРОЖАЕВ</b>\n(Лучший сбор за раз)\n\n${lines.join('\n')}`
@@ -330,9 +323,9 @@ function meText(user) {
         
         if (crop && mut) {
             const mutText = mut.emoji ? `${mut.emoji} ` : '';
-            bestHarvestStr = `${logic.format.formatNumber(user.stats.bestHarvest)} (${mutText}${crop.emoji} ${weight})`;
+            bestHarvestStr = `${logic.format.formatShortNumber(user.stats.bestHarvest)} (${mutText}${crop.emoji} ${weight})`;
         } else {
-            bestHarvestStr = `${logic.format.formatNumber(user.stats.bestHarvest)} монет`;
+            bestHarvestStr = `${logic.format.formatShortNumber(user.stats.bestHarvest)} монет`;
         }
     }
     const leavesText = logic.event.isEventActive() ? `🍂 Листья: <b>${user.leaves || 0}</b>\n` : ''
@@ -341,7 +334,7 @@ function meText(user) {
         `🏷 Ник: <b>${displayName(user)}</b>\n` +
         `🆔 ID: <code>${user.id}</code>\n` +
         `Статус: ${isVip ? `👑 <b>VIP активен еще <i>${logic.format.formatTime(leftTimeVip)}</i></b>` : '❌ <b>VIP не активен</b>'}\n\n` +
-        `💰 Баланс: <b>${logic.format.formatNumber(user.coin)}</b> монет\n` +
+        `💰 Баланс: <b>${logic.format.formatShortNumber(user.coin)}</b> монет\n` +
         `🚜 На ферме с <b>${logic.format.formatDate(user.createdAt)}(<i>${leftDayToReg} дн.</i>)</b>\n` +
         leavesText +
         `🏆 Рекорд урожая: ${bestHarvestStr}`;
@@ -372,8 +365,8 @@ function _upgradeStatusLine(user, key, price, cooldownLeft) {
 
     if (level >= cfg.maxLevel) return '   ✅ <b>MAX</b>'
     if (cooldownLeft > 0) return `   ⏱ Доступно через ${logic.format.formatTime(cooldownLeft)}`
-    if (price !== null && user.coin < price) return `   💰 Нужно ${logic.format.formatNumber(price)} (не хватает)`
-    return `   💰 Следующий: <b>${logic.format.formatNumber(price)}</b> монет · ✅ Доступно`
+    if (price !== null && user.coin < price) return `   💰 Нужно ${logic.format.formatShortNumber(price)} (не хватает)`
+    return `   💰 Следующий: <b>${logic.format.formatShortNumber(price)}</b> монет · ✅ Доступно`
 }
 
 /**

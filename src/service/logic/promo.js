@@ -2,11 +2,19 @@ const time = require('./time')
 const vip = require('./vip')
 
 /**
- * Активирует промокод для игрока.
- * @param {Object} user 
- * @param {Object} db - Вся база данных (чтобы проверить лимиты и сохранить)
- * @param {string} code 
- * @returns {{ ok: boolean, error?: string, rewardText?: string }}
+ * Активирует промокод для игрока: проверяет существование, лимит и повторное использование.
+ *
+ * При успехе сразу начисляет награду (`vip` или `coins`), добавляет код в `user.usedPromos`
+ * и увеличивает счётчик использований промокода в `db.promos`.
+ *
+ * @param {Object} user - Данные игрока (мутируется).
+ * @param {Object} db - Вся база данных (для проверки лимитов).
+ * @param {string} code - Промокод (регистр не важен — приводится к верхнему).
+ * @returns {{ok: true, rewardText: string} | {ok: false, error: 'not_found'|'limit_reached'|'already_used'}}
+ *
+ * @example
+ * activatePromo(user, db, 'autumn2025')
+ * // → { ok: true, rewardText: '💎 VIP на 3 дн.' }
  */
 function activatePromo(user, db, code) {
     code = code.toUpperCase() // Приводим к верхнему регистру
