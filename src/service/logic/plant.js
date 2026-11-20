@@ -19,16 +19,14 @@ function plant(user, cropKey, index = null) {
         target = index
     }
 
-    // 👈 Проверяем и списываем МОНЕТЫ, а не инвентарь
     const seedPrice = CROPS[cropKey].seed
     if (user.coin < seedPrice) {
         return { ok: false, error: 'not_enough_coins' }
     }
 
-    // Запоминаем погоду В МОМЕНТ ПОСАДКИ
     const weather = events.getCurrentEvent()
 
-    user.coin -= seedPrice // 👈 Списываем деньги
+    user.coin -= seedPrice
     user.slots[target] = { 
         crop: cropKey, 
         plantedAt: time.now(),
@@ -52,19 +50,25 @@ function harvestSlot(user, index) {
 
     const slot = user.slots[index]
     if (slot === null) return { ok: false, error: 'empty' }
-
+    const crop = CROPS[slot.crop]
+    if (!crop) return { ok: false, error: 'unknown_crop' }
+    
     const left = time.timeLeft(slot, user)
     if (left > 0) return { ok: false, error: 'not_ready', left }
 
     const weight = rollWeight(slot.crop) * (1 + user.upgrades.selection * 0.05)
-    const mutation = mutations.rollMutation(user)
-    
-    // Берем множитель цены из слота
-    const sellMult = slot.weatherSell || 1.0 
-    
-    // Передаем множитель в функцию подсчета
-    let reward = mutations.rewardForMutation(slot.crop, mutation, weight, sellMult)
 
+    const mutation = mutations.rollMutation(user)
+    const sellMult = slot.weatherSell || 1.0 
+
+    // Передаем множитель в функцию подсчета
+    let reward
+    if(crop.fromCase){
+        reward = mutations.rewardForMutation(slot.crop, 'common', weight, 1.0)
+    } else {
+        reward = mutations.rewardForMutation(slot.crop, mutation, weight, sellMult)
+    }
+    
     // VIP-бонус (+20%)
     reward = vip.applyVipBonus(reward, user)
     // Добавление листьев

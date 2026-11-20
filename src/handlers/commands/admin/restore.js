@@ -1,7 +1,7 @@
 const fs = require('fs/promises')
 const axios = require('axios')
-const { ADMIN_ID, DB_PATH } = require('../../service/config')
-const { isAdmin } = require('../../utils/isAdmin')
+const { DB_PATH } = require('../../../service/config')
+const { isAdmin } = require('../../../utils/isAdmin')
 
 async function restoreHandler(ctx) {
     if (!isAdmin(ctx)) {

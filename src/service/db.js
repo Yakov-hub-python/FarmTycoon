@@ -25,16 +25,10 @@ function _newUser(userId) {
 
         stats: { bestHarvest: 0, bestCrop: null, bestMutation: null, bestWeight: 0 },
 
-        allTimeBestHarvest: 0,
-        allTimeBestCrop: null,
-        allTimeBestMutation: null,
-        allTimeBestWeight: 0,
-
         upgrades: { genetics: 0, selection: 0, agronomy: 0, land: 0 },
         upgradeCooldowns: { genetics: 0, selection: 0, agronomy: 0, land: 0 },
 
-        weeklyChampionUntil: 0,
-        weeklyChampionWeek: 0,
+        caseCooldownUntil: 0,
 
         referredBy: null,
         referralCount: 0,
@@ -118,6 +112,14 @@ function _withLock(fn) {
  */
 function normalizeUser(user, userId) {
     let changed = false
+
+    // ===== ПРИНУДИТЕЛЬНОЕ УДАЛЕНИЕ ПОЛЕЙ
+    delete user.allTimeBestHarvest
+    delete user.allTimeBestCrop
+    delete user.allTimeBestMutation
+    delete user.allTimeBestWeight
+    delete user.weeklyChampionUntil
+    delete user.weeklyChampionWeek
 
     // ===== БАЗОВЫЕ ПОЛЯ =====
     if (user.id !== userId) { user.id = userId; changed = true }
@@ -214,7 +216,10 @@ function normalizeUser(user, userId) {
             changed = true
         }
     }
-
+    if(!user.caseCooldownUntil || Number.isInteger(user.caseCooldownUntil)){
+        user.caseCooldownUntil = 0
+        changed = true
+    }
     return changed
 }
 
@@ -264,6 +269,33 @@ async function saveUser(userId, user) {
 }
 
 /**
+ * Удаляет юзера из базы и обнуляет referredBy у его рефералов.
+ * @param {string|number} userId
+ * @returns {Promise<boolean>} true — если удалён, false — если не найден
+ */
+async function deleteUser(userId) {
+    userId = String(userId)
+    return _withLock(async () => {
+        const db = await _readDb()
+        if (!db.users[userId]) return false
+
+        delete db.users[userId]
+
+        // У тех, кто ссылался на удалённого, обнуляем referredBy
+        for (const id in db.users) {
+            const user = db.users[id]
+            if (user && String(user.referredBy) === userId) {
+                user.referredBy = null
+            }
+        }
+
+        await _writeDb(db)
+        return true
+    })
+}
+
+
+/**
  * Возвращает массив всех юзеров. Не нормализует.
  * @returns {Promise<Array<Object>>}
  */
@@ -296,4 +328,4 @@ async function backupDatabase() {
     return data
 }
 
-module.exports = { getUser, saveUser, normalizeUser, getAllUsers, getUserByRefCode, backupDatabase }
+module.exports = { getUser, saveUser, deleteUser,  normalizeUser, getAllUsers, getUserByRefCode, backupDatabase }

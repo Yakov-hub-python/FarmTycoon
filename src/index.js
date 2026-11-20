@@ -31,7 +31,9 @@ server.listen(PORT, () => {
 });
 
 bot.launch().then(() => {
-    bot.telegram.sendMessage(ADMIN_ID, '✅ Бот запущен!').catch(() => {})
+    setTimeout(() => {
+        bot.telegram.sendMessage(ADMIN_ID, '✅ Бот запущен!').catch(() => {})
+    }, 1000)
 })
 console.log('Бот запущен')
 

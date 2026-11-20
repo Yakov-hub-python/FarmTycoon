@@ -1,16 +1,7 @@
 const fs = require('fs/promises')
-const fsSync = require('fs')
+const { DB_PATH } = require('../../../service/config')
+const { isAdmin } = require('../../../utils/isAdmin')
 const axios = require('axios')
-const { ADMIN_ID, DB_PATH } = require('../../service/config')
-
-/**
- * Проверяет, что команду вызвал админ.
- * @param {Object} ctx
- * @returns {boolean}
- */
-function isAdmin(ctx) {
-    return ctx.from.id.toString() === ADMIN_ID
-}
 
 /**
  * Команда /backup — отправляет database.json админу в личку.
@@ -65,5 +56,7 @@ async function backupHandler(ctx) {
         await ctx.reply(`❌ Не удалось отправить файл: ${e.message}`)
     }
 }
+
+
 
 module.exports = { backupHandler }

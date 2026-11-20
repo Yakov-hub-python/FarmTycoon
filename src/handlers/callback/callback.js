@@ -26,6 +26,8 @@ function registerCallbacks(bot) {
     bot.action(/^lab_(buy|cd|poor)_(\w+)$/, async(ctx) => require('./upgrades').showUpgrade(ctx))
     bot.action('lab_refresh', async(ctx) => require('./upgrades').updateUpgrade(ctx))
     bot.action('lab_noop', async(ctx) => require('./upgrades').maxUpgrade(ctx))
+    bot.action('lootbox', async(ctx) => require('./lootbox').showLootbox(ctx))
+    bot.action(/^lootbox_open:(\w+)$/, async(ctx) => require('./lootbox').openLootbox(ctx))
 }
 
 

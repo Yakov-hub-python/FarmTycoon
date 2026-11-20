@@ -1,6 +1,6 @@
 // ИМПОРТЫ
 const logic = require('../service/logic')
-const { CROPS, CROP_ORDER, MUTATIONS, MUTATION_RANK, TITLES, LAB_UPGRADES, VIP_SELL_MULT } = require('../service/config')
+const { CROPS, CROP_ORDER, MUTATIONS, MUTATION_RANK, TITLES, LAB_UPGRADES, VIP_BONUS_MULT } = require('../service/config')
 
 // ===== ЭКРАНИРОВАНИЕ HTML =====
 function escapeHtml(s) {
@@ -392,18 +392,37 @@ function upgradeText(user) {
         if (effect) text += `   ${effect}\n`
         text += _upgradeStatusLine(user, key, price, cdLeft) + `\n\n`
     }
-
-    const vipMultPct = Math.round((VIP_SELL_MULT - 1) * 100)
     text += `💰 Твой баланс: <b>${logic.format.formatNumber(user.coin)}</b> монет\n`
 
     return text
 }
 
+/** 
+ * Текст меню кейсов
+*/
+function lootboxText(user) {
+    return `📦 <b>Кейсы</b>\n\n` +
+        `📦 <b>Обычный</b> — 10 тыс.\n` +
+        `💰 до 50 тыс.\n\n` +
+        `🥈 <b>Серебряный</b> — 100 тыс.\n` +
+        `💰 до 150 тыс. · 💎 VIP 2 дня\n` +
+        `🌱 0.5% — виноград или лунная пшеница\n\n` +
+        `🥇 <b>Золотой</b> — 500 тыс.\n` +
+        `💰 до 3.5 млн · 💎 VIP 3 дня\n` +
+        `🌱 1% — огненный цветок\n\n` +
+        `💎 <b>Легендарный</b> — 2 млн.\n` +
+        `💰 до 20 млн · 💎 VIP 7 дней\n` +
+        `🌱 2% — кристальный плод\n\n` +
+        `🌱 Семя сажается сразу. Если грядок нет —\n` +
+        `🌱 Если грядок нет — компенсация 66% монетами\n\n` +
+        `💰 Твой баланс: <b>${logic.format.formatShortNumber(user.coin)}</b>`
+}
+
 // ===== ЭКСПОРТ =====
 module.exports = {
-    WELCOME, HELP, PLANT_ERRORS,
+    WELCOME, HELP, PLANT_ERRORS, displayName,
     menuText, farmText, harvestText, 
     shopText, topCoinsText, topHarvestText,
     escapeHtml, displayName, friendsText, eventText, 
-    titlesText, meText, upgradeText
+    titlesText, meText, upgradeText, lootboxText
 }

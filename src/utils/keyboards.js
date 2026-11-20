@@ -22,17 +22,18 @@ function _slotLabel(i, slot, user) {
 function mainMenuKb() {
     return Markup.inlineKeyboard([
         [Markup.button.callback('🌾 Моя ферма', 'farm')],
+        [Markup.button.callback('🛒 Магазин', 'shop')],
+        [Markup.button.callback('🧪 Лаборатория', 'lab')],
         [
-            Markup.button.callback('🛒 Магазин', 'shop'),
-            Markup.button.callback('🏆 Топы', 'top')
-        ],
-        [Markup.button.callback('👤 Профиль', 'profile')],
-        [
-            Markup.button.callback('📅 Бонус', 'daily'),
+            Markup.button.callback('🎁 Кейсы', 'lootbox'),
+            Markup.button.callback('🏆 Топы', 'top'),
             Markup.button.callback('ℹ️ Помощь', 'help')
         ],
-        [Markup.button.callback('🤝 Друзья', 'friends')],
-        [Markup.button.callback('🧪 Лаборатория', 'lab')],
+        [Markup.button.callback('📅 Бонус', 'daily')],
+        [
+            Markup.button.callback('👤 Профиль', 'profile'),
+            Markup.button.callback('🤝 Друзья', 'friends')
+        ],
         logic.event.isEventActive()?[Markup.button.callback('🍂 Праздник Урожая', 'event')]: []
     ])
 }
@@ -109,13 +110,13 @@ function shopKb(count = 1) {
     const rows = []
 
     // Кнопки количества (с галочкой)
-    const options = [1, 2, 5, 10]
+    const options = [1, 2, 3, 4, 5, 8, 10, 16]
     const countBtns = options.map(opt => {
         const text = (opt === count) ? `✅ X${opt}` : `X${opt}`
         return Markup.button.callback(text, `update_count_${opt}`)
     })
-    for (let i = 0; i < countBtns.length; i += 2) {
-        rows.push(countBtns.slice(i, i + 2))
+    for (let i = 0; i < countBtns.length; i += 4) {
+        rows.push(countBtns.slice(i, i + 4))
     }
 
     // Кнопки семян (по 2 в ряд)
@@ -126,8 +127,8 @@ function shopKb(count = 1) {
             `plant:${key}:${count}`
         )
     })
-    for (let i = 0; i < seedBtns.length; i += 2) {
-        rows.push(seedBtns.slice(i, i + 2))
+    for (let i = 0; i < seedBtns.length; i += 3) {
+        rows.push(seedBtns.slice(i, i + 3))
     }
 
     // Кнопки навигации
@@ -273,9 +274,19 @@ function upgradeKb(user) {
     return Markup.inlineKeyboard([row1, row2, row3])
 }
 
+function lootboxKb() {
+    return Markup.inlineKeyboard([
+        [Markup.button.callback('📦 Открыть за 10 тыс.', 'lootbox_open:common')],
+        [Markup.button.callback('🥈 Открыть за 100 тыс.', 'lootbox_open:silver')],
+        [Markup.button.callback('🥇 Открыть за 500 тыс.', 'lootbox_open:gold')],
+        [Markup.button.callback('💎 Открыть за 2 млн.', 'lootbox_open:legendary')],
+        [Markup.button.callback('⬅️ В меню', 'menu')],
+    ])
+}
+
 // ===== ЭКСПОРТ =====
 module.exports = {
     mainMenuKb, backKb, afterHarvestKb, farmKb,
     shopKb, topsKb, friendsKb, eventKb, titlesKb, 
-    profileKb, upgradeKb
+    profileKb, upgradeKb, lootboxKb
 }
