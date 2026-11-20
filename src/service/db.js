@@ -25,16 +25,10 @@ function _newUser(userId) {
 
         stats: { bestHarvest: 0, bestCrop: null, bestMutation: null, bestWeight: 0 },
 
-        allTimeBestHarvest: 0,
-        allTimeBestCrop: null,
-        allTimeBestMutation: null,
-        allTimeBestWeight: 0,
-
         upgrades: { genetics: 0, selection: 0, agronomy: 0, land: 0 },
         upgradeCooldowns: { genetics: 0, selection: 0, agronomy: 0, land: 0 },
 
-        weeklyChampionUntil: 0,
-        weeklyChampionWeek: 0,
+        caseCooldownUntil: 0,
 
         referredBy: null,
         referralCount: 0,
@@ -214,7 +208,10 @@ function normalizeUser(user, userId) {
             changed = true
         }
     }
-
+    if(!user.caseCooldownUntil || Number.isInteger(user.caseCooldownUntil)){
+        user.caseCooldownUntil = 0
+        changed = true
+    }
     return changed
 }
 

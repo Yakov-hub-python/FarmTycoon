@@ -2,6 +2,7 @@ const config = require('../config')
 const vip = require('./vip')
 const plant = require('./plant')
 const time = require('./time')
+const random = require('../../utils/random')
 
 /**
  * Проверяет, можно ли купить предмет.
@@ -50,17 +51,17 @@ function applyPurchase(user, itemKey) {
     } 
     
     if (itemKey === 'lootbox') {
-        const random = Math.random()
-        if (random < 0.01) { // 1%
+        const chance = random.randomFloat(0, 1, 2)
+        if (chance < 0.01) { // 1%
             vip.addVipDays(user, 10, 'event_lootbox')
             if (!user.ownedTitles.includes('lucky')) {
                 user.ownedTitles.push('lucky')
             }
             return { ok: true, text: '🎰 ДЖЕКПОТ! 10 дней VIP + Титул "Счастливчик"!' }
-        } else if (random < 0.10) { // 9%
+        } else if (chance < 0.10) { // 9%
             user.leaves += 150
             return { ok: true, text: '🍂 Вы нашли 150 листьев!' }
-        } else if (random < 0.40) { // 30%
+        } else if (chance < 0.40) { // 30%
             vip.addVipDays(user, 1, 'event_lootbox')
             return { ok: true, text: '💎 VIP на 1 день!' }
         } else { // 60%

@@ -11,6 +11,7 @@ const events = require('./logic/events')
 const promo = require('./logic/promo')
 const event = require('./logic/event')
 const upgrades = require('./logic/upgrades')
+const lootbox = require('./logic/lootbox')
 
 // ===== ЭКСПОРТ =====
 module.exports = {
@@ -26,5 +27,6 @@ module.exports = {
     events,
     promo,
     event,
-    upgrades
+    upgrades,
+    lootbox
 }

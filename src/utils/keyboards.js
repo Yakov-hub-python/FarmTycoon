@@ -22,17 +22,18 @@ function _slotLabel(i, slot, user) {
 function mainMenuKb() {
     return Markup.inlineKeyboard([
         [Markup.button.callback('🌾 Моя ферма', 'farm')],
+        [Markup.button.callback('🛒 Магазин', 'shop')],
+        [Markup.button.callback('🧪 Лаборатория', 'lab')],
         [
-            Markup.button.callback('🛒 Магазин', 'shop'),
-            Markup.button.callback('🏆 Топы', 'top')
-        ],
-        [Markup.button.callback('👤 Профиль', 'profile')],
-        [
-            Markup.button.callback('📅 Бонус', 'daily'),
+            Markup.button.callback('🎁 Кейсы', 'lootbox'),
+            Markup.button.callback('🏆 Топы', 'top'),
             Markup.button.callback('ℹ️ Помощь', 'help')
         ],
-        [Markup.button.callback('🤝 Друзья', 'friends')],
-        [Markup.button.callback('🧪 Лаборатория', 'lab')],
+        [Markup.button.callback('📅 Бонус', 'daily')],
+        [
+            Markup.button.callback('👤 Профиль', 'profile'),
+            Markup.button.callback('🤝 Друзья', 'friends')
+        ],
         logic.event.isEventActive()?[Markup.button.callback('🍂 Праздник Урожая', 'event')]: []
     ])
 }
@@ -273,9 +274,19 @@ function upgradeKb(user) {
     return Markup.inlineKeyboard([row1, row2, row3])
 }
 
+function lootboxKb() {
+    return Markup.inlineKeyboard([
+        [Markup.button.callback('📦 Открыть за 10 тыс.', 'lootbox_open:common')],
+        [Markup.button.callback('🥈 Открыть за 100 тыс.', 'lootbox_open:silver')],
+        [Markup.button.callback('🥇 Открыть за 500 тыс.', 'lootbox_open:gold')],
+        [Markup.button.callback('💎 Открыть за 2 млн.', 'lootbox_open:legendary')],
+        [Markup.button.callback('⬅️ В меню', 'menu')],
+    ])
+}
+
 // ===== ЭКСПОРТ =====
 module.exports = {
     mainMenuKb, backKb, afterHarvestKb, farmKb,
     shopKb, topsKb, friendsKb, eventKb, titlesKb, 
-    profileKb, upgradeKb
+    profileKb, upgradeKb, lootboxKb
 }

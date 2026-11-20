@@ -32,58 +32,81 @@ const SLOT_MAX_COUNT = 16
 const SLOT_TOTAL_MAX = 20
 
 // ===== КУЛЬТУРЫ =====
+// ===== КУЛЬТУРЫ =====
+// Прибыль/час (без мутаций): wheat 5000 → pineapple 9000 (плавный рост).
+// Прибыль за цикл растёт экспоненциально — это и есть прогрессия.
 const CROPS = {
     'wheat': {
         name: 'Пшеница', emoji: '🌾', growTime: 15, seed: 15,
-        minWeightKG: 1.0, maxWeightKG: 3.0, pricePerKG: 20
+        minWeightKG: 1.0, maxWeightKG: 3.0, pricePerKG: 18
     },
     'cucumber': {
         name: 'Огурец', emoji: '🥒', growTime: 30, seed: 40,
-        minWeightKG: 1.5, maxWeightKG: 3.5, pricePerKG: 40
+        minWeightKG: 1.5, maxWeightKG: 3.5, pricePerKG: 34
     },
     'carrot': {
         name: 'Морковь', emoji: '🥕', growTime: 90, seed: 100,
-        minWeightKG: 2.0, maxWeightKG: 5.0, pricePerKG: 60
+        minWeightKG: 2.0, maxWeightKG: 5.0, pricePerKG: 70
     },
     'strawberry': {
         name: 'Клубника', emoji: '🍓', growTime: 300, seed: 400,
-        minWeightKG: 0.5, maxWeightKG: 2.5, pricePerKG: 500
+        minWeightKG: 0.5, maxWeightKG: 2.5, pricePerKG: 605
     },
     'pepper': {
         name: 'Перец', emoji: '🌶', growTime: 360, seed: 500,
-        minWeightKG: 0.5, maxWeightKG: 1.5, pricePerKG: 800
+        minWeightKG: 0.5, maxWeightKG: 1.5, pricePerKG: 1146
     },
     'pumpkin': {
         name: 'Тыква', emoji: '🎃', growTime: 450, seed: 800,
-        minWeightKG: 5.0, maxWeightKG: 15.0, pricePerKG: 120
+        minWeightKG: 5.0, maxWeightKG: 15.0, pricePerKG: 165
     },
     'tomato': {
         name: 'Помидор', emoji: '🍅', growTime: 900, seed: 2000,
-        minWeightKG: 2.0, maxWeightKG: 6.0, pricePerKG: 800
+        minWeightKG: 2.0, maxWeightKG: 6.0, pricePerKG: 949
     },
     'corn': {
         name: 'Кукуруза', emoji: '🌽', growTime: 1200, seed: 3000,
-        minWeightKG: 3.0, maxWeightKG: 8.0, pricePerKG: 1000
+        minWeightKG: 3.0, maxWeightKG: 8.0, pricePerKG: 1003
     },
     'watermelon': {
         name: 'Арбуз', emoji: '🍉', growTime: 1800, seed: 5000,
-        minWeightKG: 10.0, maxWeightKG: 25.0, pricePerKG: 600
+        minWeightKG: 10.0, maxWeightKG: 25.0, pricePerKG: 512
     },
     'peach': {
         name: 'Персик', emoji: '🍑', growTime: 3600, seed: 12000,
-        minWeightKG: 0.2, maxWeightKG: 0.8, pricePerKG: 40000
+        minWeightKG: 0.2, maxWeightKG: 0.8, pricePerKG: 40500
     },
     'grape': {
         name: 'Виноград', emoji: '🍇', growTime: 7200, seed: 30000,
-        minWeightKG: 5.0, maxWeightKG: 15.0, pricePerKG: 4000
+        minWeightKG: 5.0, maxWeightKG: 15.0, pricePerKG: 4727
     },
     'pineapple': {
-        name: 'Ананас', emoji: '🍍', growTime: 14400, seed: 100000,
-        minWeightKG: 10.0, maxWeightKG: 30.0, pricePerKG: 10000
+        name: 'Ананас', emoji: '🍍', growTime: 14400, seed: 70000,
+        minWeightKG: 10.0, maxWeightKG: 30.0, pricePerKG: 5300
     },
     'mushroom': {
         name: 'Гриб', emoji: '🍄', growTime: 3600, seed: 0,
         minWeightKG: 1.0, maxWeightKG: 3.0, pricePerKG: 50000
+    },
+    goldenGrape: {
+        name: 'Золотой виноград', emoji: '🍇',
+        growTime: 1800, seed: 0, fromCase: true,
+        minWeightKG: 300, maxWeightKG: 500, pricePerKG: 1200,
+    },
+    moonWheat: {
+        name: 'Лунная пшеница', emoji: '🌌',
+        growTime: 600, seed: 0, fromCase: true,
+        minWeightKG: 200, maxWeightKG: 300, pricePerKG: 2500,
+    },
+    fireFlower: {
+        name: 'Огненный цветок', emoji: '🌺',
+        growTime: 7200, seed: 0, fromCase: true,
+        minWeightKG: 150, maxWeightKG: 250, pricePerKG: 6000,
+    },
+    crystalFruit: {
+        name: 'Кристальный плод', emoji: '🌠',
+        growTime: 21600, seed: 0, fromCase: true,
+        minWeightKG: 800, maxWeightKG: 1200, pricePerKG: 4000,
     }
 }
 
@@ -183,6 +206,68 @@ const LAB_UPGRADES = {
         cooldownSec: 3600,
     },
 }
+
+// ===== КЕЙСЫ =====
+const LOOTBOX = {
+    common: {
+        name: 'Обычный кейс',
+        emoji: '📦',
+        price: 10_000,
+        drops: [
+            { chance: 33,   type: 'coins', amount: 7_000 },
+            { chance: 40,   type: 'coins', amount: 10_500 },
+            { chance: 20,   type: 'coins', amount: 11_000 },
+            { chance: 6,    type: 'coins', amount: 12_000 },
+            { chance: 0.7,  type: 'vip', days: 1 },
+            { chance: 0.3,  type: 'coins', amount: 50_000 },
+        ],
+    },
+    silver: {
+        name: 'Серебряный кейс',
+        emoji: '🥈',
+        price: 100_000,
+        drops: [
+            { chance: 33,   type: 'coins', amount: 70_000 },
+            { chance: 35,   type: 'coins', amount: 105_000 },
+            { chance: 20,   type: 'coins', amount: 110_000 },
+            { chance: 10,   type: 'coins', amount: 120_000 },
+            { chance: 1.5,  type: 'vip', days: 2 },
+            { chance: 0.5,  type: 'seed', pool: ['goldenGrape', 'moonWheat'] },
+        ],
+    },
+    gold: {
+        name: 'Золотой кейс',
+        emoji: '🥇',
+        price: 500_000,
+        drops: [
+            { chance: 33,   type: 'coins', amount: 350_000 },
+            { chance: 30,   type: 'coins', amount: 525_000 },
+            { chance: 20,   type: 'coins', amount: 550_000 },
+            { chance: 15,   type: 'coins', amount: 600_000 },
+            { chance: 1,    type: 'vip', days: 3 },
+            { chance: 0.5,  type: 'seed', pool: ['fireFlower'] },
+            { chance: 0.5,  type: 'coins', amount: 3_500_000 },
+        ],
+    },
+    legendary: {
+        name: 'Легендарный кейс',
+        emoji: '💎',
+        price: 2_000_000,
+        drops: [
+            { chance: 33,   type: 'coins', amount: 1_400_000 },
+            { chance: 30,   type: 'coins', amount: 2_100_000 },
+            { chance: 20,   type: 'coins', amount: 2_200_000 },
+            { chance: 15,   type: 'coins', amount: 2_400_000 },
+            { chance: 1,    type: 'vip', days: 7 },
+            { chance: 0.7,  type: 'seed', pool: ['crystalFruit'] },
+            { chance: 0.3,  type: 'coins', amount: 20_000_000 },
+        ],
+    },
+}
+
+// Доля максимальной стоимости растения при компенсации за отсутствие слотов
+const SEED_FALLBACK_MULT = 0.66
+
 // ===== ОСЕННИЙ ИВЕНТ =====
 const EVENT_PRICES = {
     mushroom: 50,
@@ -200,6 +285,6 @@ module.exports = {
     CROPS, CROP_ORDER,
     MUTATIONS, MUTATION_ROLL_ORDER, MUTATION_RANK,
     VIP_BONUS_MULT, EVENTS,
-    TITLES, LAB_UPGRADES,
+    TITLES, LAB_UPGRADES, LOOTBOX, SEED_FALLBACK_MULT,
     EVENT_PRICES, EVENT_END_TIMESTAMP
 }
