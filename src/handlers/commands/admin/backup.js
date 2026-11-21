@@ -1,7 +1,6 @@
 const fs = require('fs/promises')
 const { DB_PATH } = require('../../../service/config')
 const { isAdmin } = require('../../../utils/isAdmin')
-const axios = require('axios')
 
 /**
  * Команда /backup — отправляет database.json админу в личку.
@@ -31,14 +30,13 @@ async function backupHandler(ctx) {
     }
 
     const userCount = Object.keys(parsed.users || {}).length
-    const timestamp = new Date().toISOString().slice(0, 16).replace(':', '-')
+    const timestamp = new Date().toISOString().slice(0, 16).replace(/:/g, '-')
     const filename = `backup_${timestamp}.json`
 
     try {
         await ctx.replyWithDocument(
             {
-                // Используем поток чтения для надежности
-                source: fsSync.createReadStream(DB_PATH),
+                source: Buffer.from(raw, 'utf-8'),
                 filename,
             },
             {
@@ -56,7 +54,5 @@ async function backupHandler(ctx) {
         await ctx.reply(`❌ Не удалось отправить файл: ${e.message}`)
     }
 }
-
-
 
 module.exports = { backupHandler }

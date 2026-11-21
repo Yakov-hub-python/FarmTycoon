@@ -6,6 +6,15 @@ const vip = require('./vip')
 const leavesEvent = require('./event')
 // ===== ПОСАДКА =====
 
+/**
+ * Сажает семя в указанный слот (или в первый свободный).
+ * Списывает деньги за семя и фиксирует текущую погоду.
+ * 
+ * @param {Object} user - Данные игрока (мутируется).
+ * @param {string} cropKey - Ключ культуры из CROPS.
+ * @param {number|null} [index=null] - Индекс слота. Если null, ищет первый свободный.
+ * @returns {{ok: true, slot: number, crop: string} | {ok: false, error: string}}
+ */
 function plant(user, cropKey, index = null) {
     if (!CROPS[cropKey]) return { ok: false, error: 'unknown_crop' }
 
@@ -37,12 +46,27 @@ function plant(user, cropKey, index = null) {
 }
 
 // ===== СЛУЧАЙНЫЙ ВЕС =====
+/**
+ * Роллит случайный вес урожая для указанной культуры в пределах min/max.
+ * 
+ * @param {string} cropKey - Ключ культуры.
+ * @returns {number} Вес в кг (округлен до 2 знаков).
+ */
 function rollWeight(cropKey){
     const crop = CROPS[cropKey]
     return +(Math.random() * (crop.maxWeightKG - crop.minWeightKG) + crop.minWeightKG).toFixed(2);
 }
 
 // ===== СБОР =====
+/**
+ * Собирает урожай из указанного слота.
+ * Рассчитывает вес, мутацию, погоду, VIP-бонус. 
+ * Особые растения из кейсов (fromCase) не получают мутации и погоду.
+ * 
+ * @param {Object} user - Данные игрока (мутируется: монеты, статы, слот).
+ * @param {number} index - Индекс слота.
+ * @returns {{ok: true, item: Object} | {ok: false, error: string, left?: number}}
+ */
 function harvestSlot(user, index) {
     if (index < 0 || index >= user.slots.length) {
         return { ok: false, error: 'bad_slot' }
@@ -95,6 +119,12 @@ function harvestSlot(user, index) {
     }
 }
 
+/**
+ * Собирает урожай со всех готовых слотов.
+ * 
+ * @param {Object} user - Данные игрока (мутируется).
+ * @returns {Array<Object>} Массив собранных предметов.
+ */
 function harvestAll(user) {
     const items = []
     for (let i = 0; i < user.slots.length; i++) {
@@ -105,6 +135,12 @@ function harvestAll(user) {
 }
 
 // ===== ЭВЕНТ =====
+/**
+ * Считает, сколько осенних листьев выпадет за сбор в зависимости от мутации.
+ * 
+ * @param {string} mutation - Тип мутации ('common', 'silver', 'gold').
+ * @returns {number} Количество листьев.
+ */
 function countingLeaves(mutation){
     if(mutation === 'common') return 1;
     if(mutation === 'silver') return 3;
@@ -112,5 +148,5 @@ function countingLeaves(mutation){
 }
 
 module.exports = {
-    plant, harvestSlot, harvestAll
+    plant, harvestSlot, harvestAll, countingLeaves
 }

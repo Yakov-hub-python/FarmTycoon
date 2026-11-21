@@ -213,6 +213,7 @@ const LOOTBOX = {
         name: 'Обычный кейс',
         emoji: '📦',
         price: 10_000,
+        tagline: '💰 до 50 тыс.',
         drops: [
             { chance: 33,   type: 'coins', amount: 7_000 },
             { chance: 38,   type: 'coins', amount: 11_000 },
@@ -225,6 +226,7 @@ const LOOTBOX = {
         name: 'Серебряный кейс',
         emoji: '🥈',
         price: 100_000,
+        tagline: '💰 до 150 тыс. · 💎 VIP 2 дня\n🌱 0.5% — виноград или лунная пшеница',
         drops: [
             { chance: 33,   type: 'coins', amount: 70_000 },
             { chance: 35,   type: 'coins', amount: 110_000 },
@@ -238,6 +240,7 @@ const LOOTBOX = {
         name: 'Золотой кейс',
         emoji: '🥇',
         price: 500_000,
+        tagline: '💰 до 3.5 млн · 💎 VIP 3 дня\n🌱 1% — огненный цветок',
         drops: [
             { chance: 33,   type: 'coins', amount: 350_000 },
             { chance: 33,   type: 'coins', amount: 550_000 },
@@ -252,6 +255,7 @@ const LOOTBOX = {
         name: 'Легендарный кейс',
         emoji: '💎',
         price: 2_000_000,
+        tagline: '💰 до 20 млн · 💎 VIP 7 дней\n🌱 2% — кристальный плод',
         drops: [
             { chance: 33,   type: 'coins', amount: 1_400_000 },
             { chance: 33,   type: 'coins', amount: 2_200_000 },
@@ -263,6 +267,7 @@ const LOOTBOX = {
         ],
     },
 }
+const LOOTBOX_ORDER = ['common', 'silver', 'gold', 'legendary']
 
 // Доля максимальной стоимости растения при компенсации за отсутствие слотов
 const SEED_FALLBACK_MULT = 0.66

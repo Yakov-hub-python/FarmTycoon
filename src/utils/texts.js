@@ -400,22 +400,28 @@ function upgradeText(user) {
 /** 
  * Текст меню кейсов
 */
+// В texts.js
+const { LOOTBOX, LOOTBOX_ORDER } = require('../service/config')
+
 function lootboxText(user) {
-    return `📦 <b>Кейсы</b>\n\n` +
-        `📦 <b>Обычный</b> — 10 тыс.\n` +
-        `💰 до 50 тыс.\n\n` +
-        `🥈 <b>Серебряный</b> — 100 тыс.\n` +
-        `💰 до 150 тыс. · 💎 VIP 2 дня\n` +
-        `🌱 0.5% — виноград или лунная пшеница\n\n` +
-        `🥇 <b>Золотой</b> — 500 тыс.\n` +
-        `💰 до 3.5 млн · 💎 VIP 3 дня\n` +
-        `🌱 1% — огненный цветок\n\n` +
-        `💎 <b>Легендарный</b> — 2 млн.\n` +
-        `💰 до 20 млн · 💎 VIP 7 дней\n` +
-        `🌱 2% — кристальный плод\n\n` +
-        `🌱 Семя сажается сразу. Если грядок нет —\n` +
-        `🌱 Если грядок нет — компенсация 66% монетами\n\n` +
-        `💰 Твой баланс: <b>${logic.format.formatShortNumber(user.coin)}</b>`
+    let text = `📦 <b>Кейсы</b>\n\n`
+    
+    for (const key of LOOTBOX_ORDER) {
+        const box = LOOTBOX[key]
+        if (!box) continue
+        
+        text += `${box.emoji} <b>${box.name}</b> — ${logic.format.formatShortNumber(box.price)}\n`
+        if (box.tagline) {
+            text += `${box.tagline}\n`
+        }
+        text += `\n` // Пустая строка между кейсами
+    }
+    
+    text += `🌱 Семя сажается сразу. Если грядок нет —\n`
+    text += `🌱 Если грядок нет — компенсация 66% монетами.\n\n`
+    text += `💰 Твой баланс: <b>${logic.format.formatShortNumber(user.coin)}</b>`
+    
+    return text
 }
 
 // ===== ЭКСПОРТ =====

@@ -17,7 +17,8 @@ function getTopCoins(users, limit = 10) {
  * @returns {Array<Object>}
  */
 function getTopHarvest(users, limit = 10) {
-    return users
+    const usersList = users.slice()
+    return usersList
         .filter(user => user.stats && user.stats.bestHarvest > 0)
         .sort((a, b) => b.stats.bestHarvest - a.stats.bestHarvest)
         .slice(0, limit)

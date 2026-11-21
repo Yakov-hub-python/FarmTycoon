@@ -162,7 +162,7 @@ function friendsKb(user) {
     ])
 }
 
-function eventKb(user){
+function eventKb(){
     return Markup.inlineKeyboard([
         [Markup.button.callback('🍄 Гриб (50 🍂)', 'event_buy_mushroom')],
         [Markup.button.callback('👒 Шляпа (500 🍂)', 'event_buy_strawHat')],
@@ -275,13 +275,32 @@ function upgradeKb(user) {
 }
 
 function lootboxKb() {
-    return Markup.inlineKeyboard([
-        [Markup.button.callback('📦 Открыть за 10 тыс.', 'lootbox_open:common')],
-        [Markup.button.callback('🥈 Открыть за 100 тыс.', 'lootbox_open:silver')],
-        [Markup.button.callback('🥇 Открыть за 500 тыс.', 'lootbox_open:gold')],
-        [Markup.button.callback('💎 Открыть за 2 млн.', 'lootbox_open:legendary')],
-        [Markup.button.callback('⬅️ В меню', 'menu')],
-    ])
+    const rows = []
+    const buttons = []
+
+    // 1. Генерируем кнопки из конфига
+    for (const key of LOOTBOX_ORDER) {
+        const box = logic.lootbox.getLootbox(key)
+        if (!box) continue
+        
+        // Короткий текст: {emoji} {price}
+        buttons.push(
+            Markup.button.callback(
+                `${box.emoji} ${logic.format.formatShortNumber(box.price)}`, 
+                `lootbox_open:${key}`
+            )
+        )
+    }
+
+    // 2. Разбиваем по 2 в ряд
+    for (let i = 0; i < buttons.length; i += 2) {
+        rows.push(buttons.slice(i, i + 2))
+    }
+
+    // 3. Кнопка Назад
+    rows.push([Markup.button.callback('⬅️ В меню', 'menu')])
+    
+    return Markup.inlineKeyboard(rows)
 }
 
 // ===== ЭКСПОРТ =====
