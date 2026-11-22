@@ -91,12 +91,16 @@ const PLANT_ERRORS = {
 function menuText(user) {
     const leftTimeVip = logic.vip.isVipActive(user) ? user.vipUntil - logic.time.now() : 0;
     const leavesText = logic.event.isEventActive()?`🍂 Листья: ${user.leaves}\n`: ''
+    const marketLine = logic.event.isMarketCrisisActive() 
+        ? `📈 <b>Рыночный ажиотаж:</b> +10% к прибыли!\n` 
+        : ''
     return `🌾 <b>FARM TYCOON</b>\n\n` +
         `👤 Ник: <b>${displayName(user)}</b>\n` +
         `💰 Баланс: <b>${logic.format.formatNumber(user.coin)}</b> монет\n` +
         `💎 VIP: ${logic.vip.isVipActive(user) ? `👑 <b>VIP активен еще ${logic.format.formatTime(leftTimeVip)}</b>\n` : 
             '❌ <b>VIP не активен</b>'}\n` +
         leavesText +
+        marketLine +
         `🌱 Слотов: ${user.slots.length}\n\n` +
         `👇 Выбери действие:`
 }
@@ -119,10 +123,14 @@ function farmText(user) {
     if (ready > 0) status += ` · ✅ Готово: ${ready}`
     const weather = logic.events.getCurrentEvent()
     const leavesLine = logic.event.isEventActive() ? `🍂 Листья: ${user.leaves}\n` : ''
+    const marketLine = logic.event.isMarketCrisisActive() 
+        ? `📈 <b>Рыночный ажиотаж:</b> +10% к прибыли!\n` 
+        : ''
 
     return `🚜 <b>ТВОЯ ФЕРМА</b>\n\n` +
         `💰 Баланс: <b>${logic.format.formatNumber(user.coin)}</b> монет\n` +
         leavesLine +
+        marketLine +
         `${weather.emoji} ${weather.name}\n${weather.desc}\n\n` +
         `${status}\n\n` +
         `👇 Выбери слот или купи семена:`

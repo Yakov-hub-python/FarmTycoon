@@ -1,7 +1,7 @@
 // ИМПОРТЫ
 const { Markup } = require('telegraf')
 const logic = require('../service/logic')
-const { CROPS, CROP_ORDER, TITLES } = require('../service/config')
+const { CROPS, CROP_ORDER, TITLES, LOOTBOX_ORDER } = require('../service/config')
 const config = require('../service/config')
 
 /**

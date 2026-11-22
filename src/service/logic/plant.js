@@ -1,9 +1,9 @@
-const { CROPS } = require('../config')
+const { CROPS, MARKET_CRISIS } = require('../config')
 const time = require('./time')
 const mutations = require('./mutations')
 const events = require('./events')
 const vip = require('./vip')
-const leavesEvent = require('./event')
+const event = require('./event')
 // ===== ПОСАДКА =====
 
 /**
@@ -95,8 +95,13 @@ function harvestSlot(user, index) {
     
     // VIP-бонус (+20%)
     reward = vip.applyVipBonus(reward, user)
+
+    // Рыночный ажиотаж (+10%)
+    if (event.isMarketCrisisActive()) {
+        reward = Math.floor(reward * MARKET_CRISIS.multiplier)
+    }
     // Добавление листьев
-    const leaves = leavesEvent.isEventActive()? countingLeaves(mutation) : 0
+    const leaves = event.isEventActive()? countingLeaves(mutation) : 0
     user.leaves += leaves
 
     // Обновляем статистику

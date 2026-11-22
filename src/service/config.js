@@ -32,82 +32,89 @@ const SLOT_MAX_COUNT = 16
 const SLOT_TOTAL_MAX = 20
 
 // ===== КУЛЬТУРЫ =====
-// ===== КУЛЬТУРЫ =====
-// Прибыль/час (без мутаций): wheat 5000 → pineapple 9000 (плавный рост).
-// Прибыль за цикл растёт экспоненциально — это и есть прогрессия.
 const CROPS = {
     'wheat': {
-        name: 'Пшеница', emoji: '🌾', growTime: 15, seed: 15,
-        minWeightKG: 1.0, maxWeightKG: 3.0, pricePerKG: 18
+        name: 'Пшеница', emoji: '🌾', 
+        growTime: 15, seed: 15,
+        minWeightKG: 1.0, maxWeightKG: 3.0, pricePerKG: 18,
     },
     'cucumber': {
-        name: 'Огурец', emoji: '🥒', growTime: 30, seed: 40,
-        minWeightKG: 1.5, maxWeightKG: 3.5, pricePerKG: 34
+        name: 'Огурец', emoji: '🥒', 
+        growTime: 30, seed: 40,
+        minWeightKG: 1.5, maxWeightKG: 3.5, pricePerKG: 33,
     },
     'carrot': {
-        name: 'Морковь', emoji: '🥕', growTime: 90, seed: 100,
-        minWeightKG: 2.0, maxWeightKG: 5.0, pricePerKG: 70
+        name: 'Морковь', emoji: '🥕', 
+        growTime: 90, seed: 100,
+        minWeightKG: 2.0, maxWeightKG: 5.0, pricePerKG: 66,
     },
     'strawberry': {
-        name: 'Клубника', emoji: '🍓', growTime: 300, seed: 400,
-        minWeightKG: 0.5, maxWeightKG: 2.5, pricePerKG: 605
+        name: 'Клубника', emoji: '🍓', 
+        growTime: 300, seed: 400,
+        minWeightKG: 0.75, maxWeightKG: 2.5, pricePerKG: 560,
     },
     'pepper': {
-        name: 'Перец', emoji: '🌶', growTime: 360, seed: 500,
-        minWeightKG: 0.5, maxWeightKG: 1.5, pricePerKG: 1146
+        name: 'Перец', emoji: '🌶', 
+        growTime: 360, seed: 500,
+        minWeightKG: 0.5, maxWeightKG: 1.5, pricePerKG: 1040,
     },
     'pumpkin': {
-        name: 'Тыква', emoji: '🎃', growTime: 450, seed: 800,
-        minWeightKG: 5.0, maxWeightKG: 15.0, pricePerKG: 165
+        name: 'Тыква', emoji: '🎃', 
+        growTime: 450, seed: 800,
+        minWeightKG: 5.5, maxWeightKG: 15.0, pricePerKG: 148,
     },
     'tomato': {
-        name: 'Помидор', emoji: '🍅', growTime: 900, seed: 2000,
-        minWeightKG: 2.0, maxWeightKG: 6.0, pricePerKG: 949
+        name: 'Помидор', emoji: '🍅', 
+        growTime: 900, seed: 2000,
+        minWeightKG: 2.5, maxWeightKG: 6.0, pricePerKG: 850,
     },
     'corn': {
-        name: 'Кукуруза', emoji: '🌽', growTime: 1200, seed: 3000,
-        minWeightKG: 3.0, maxWeightKG: 8.0, pricePerKG: 1003
+        name: 'Кукуруза', emoji: '🌽', 
+        growTime: 1200, seed: 3000,
+        minWeightKG: 3.5, maxWeightKG: 8.0, pricePerKG: 890,
     },
     'watermelon': {
-        name: 'Арбуз', emoji: '🍉', growTime: 1800, seed: 5000,
-        minWeightKG: 10.0, maxWeightKG: 25.0, pricePerKG: 512
+        name: 'Арбуз', emoji: '🍉', 
+        growTime: 1800, seed: 5000,
+        minWeightKG: 15.0, maxWeightKG: 25.0, pricePerKG: 395,
     },
     'peach': {
-        name: 'Персик', emoji: '🍑', growTime: 3600, seed: 12000,
-        minWeightKG: 0.2, maxWeightKG: 0.8, pricePerKG: 40500
+        name: 'Персик', emoji: '🍑', 
+        growTime: 3600, seed: 12000,
+        minWeightKG: 0.4, maxWeightKG: 0.8, pricePerKG: 30000,
     },
     'grape': {
-        name: 'Виноград', emoji: '🍇', growTime: 7200, seed: 30000,
-        minWeightKG: 5.0, maxWeightKG: 15.0, pricePerKG: 4727
+        name: 'Виноград', emoji: '🍇', 
+        growTime: 7200, seed: 30000,
+        minWeightKG: 8.5, maxWeightKG: 15.0, pricePerKG: 3670,
     },
     'pineapple': {
-        name: 'Ананас', emoji: '🍍', growTime: 14400, seed: 70000,
-        minWeightKG: 10.0, maxWeightKG: 30.0, pricePerKG: 5300
+        name: 'Ананас', emoji: '🍍', 
+        growTime: 14400, seed: 70000,
+        minWeightKG: 18.0, maxWeightKG: 30.0, pricePerKG: 3970,
     },
-    'mushroom': {
-        name: 'Гриб', emoji: '🍄', growTime: 3600, seed: 0,
-        minWeightKG: 1.0, maxWeightKG: 3.0, pricePerKG: 50000
-    },
-    goldenGrape: {
-        name: 'Золотой виноград', emoji: '🍇',
+
+    // ===== ОСОБЫЕ РАСТЕНИЯ ИЗ КЕЙСОВ =====
+    'goldenGrape': {
+        name: 'Золотой виноград', emoji: '🍇', 
         growTime: 1800, seed: 0, fromCase: true,
         minWeightKG: 300, maxWeightKG: 500, pricePerKG: 1200,
     },
-    moonWheat: {
-        name: 'Лунная пшеница', emoji: '🌌',
+    'moonWheat': {
+        name: 'Лунная пшеница', emoji: '🌌', 
         growTime: 600, seed: 0, fromCase: true,
         minWeightKG: 200, maxWeightKG: 300, pricePerKG: 2500,
     },
-    fireFlower: {
-        name: 'Огненный цветок', emoji: '🌺',
+    'fireFlower': {
+        name: 'Огненный цветок', emoji: '🌺', 
         growTime: 7200, seed: 0, fromCase: true,
         minWeightKG: 150, maxWeightKG: 250, pricePerKG: 6000,
     },
-    crystalFruit: {
-        name: 'Кристальный плод', emoji: '🌠',
+    'crystalFruit': {
+        name: 'Кристальный плод', emoji: '🌠', 
         growTime: 21600, seed: 0, fromCase: true,
         minWeightKG: 800, maxWeightKG: 1200, pricePerKG: 4000,
-    }
+    },
 }
 
 const CROP_ORDER = [
@@ -168,7 +175,7 @@ const LAB_UPGRADES = {
         effectType: 'goldChance',
         effectPerLevel: 0.005,
         basePrice: 30000,
-        priceMultiplier: 2,
+        priceMultiplier: 2.5,
         maxLevel: 8,
         cooldownSec: 1800,
     },
@@ -179,7 +186,7 @@ const LAB_UPGRADES = {
         effectType: 'weight',
         effectPerLevel: 0.05,
         basePrice: 20000,
-        priceMultiplier: 2,
+        priceMultiplier: 2.5,
         maxLevel: 8,
         cooldownSec: 1800,
     },
@@ -272,7 +279,7 @@ const LOOTBOX_ORDER = ['common', 'silver', 'gold', 'legendary']
 // Доля максимальной стоимости растения при компенсации за отсутствие слотов
 const SEED_FALLBACK_MULT = 0.66
 
-// ===== ОСЕННИЙ ИВЕНТ =====
+// ===== ИВЕНТЫ =====
 const EVENT_PRICES = {
     mushroom: 50,
     strawHat: 500,
@@ -280,7 +287,15 @@ const EVENT_PRICES = {
     lootbox: 100
 }
 
-const EVENT_END_TIMESTAMP = new Date('2026-12-01T00:00:00+03:00').getTime()
+const EVENT_END_TIMESTAMP = new Date('2026-11-23T00:00:00+03:00').getTime()
+
+const MARKET_CRISIS = {
+    active: true, 
+    multiplier: 1.10, // +10% к доходу
+    endTimestamp: new Date('2026-12-01T00:00:00+03:00').getTime(),
+    name: '📈 Рыночный ажиотаж',
+    desc: 'Цены взлетели! +10% к прибыли.'
+}
 // ===== ЭКСПОРТ =====
 module.exports = {    
     BOT_TOKEN, DB_PATH, ADMIN_ID, TIME_UNITS, NUMBER_UNITS,
@@ -289,6 +304,6 @@ module.exports = {
     CROPS, CROP_ORDER,
     MUTATIONS, MUTATION_ROLL_ORDER, MUTATION_RANK,
     VIP_BONUS_MULT, EVENTS,
-    TITLES, LAB_UPGRADES, LOOTBOX, SEED_FALLBACK_MULT,
-    EVENT_PRICES, EVENT_END_TIMESTAMP
+    TITLES, LAB_UPGRADES, LOOTBOX, SEED_FALLBACK_MULT, LOOTBOX_ORDER,
+    EVENT_PRICES, EVENT_END_TIMESTAMP, MARKET_CRISIS
 }
