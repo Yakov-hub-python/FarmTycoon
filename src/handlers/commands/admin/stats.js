@@ -26,7 +26,6 @@ async function statsHandler(ctx) {
     let totalSlots = 0
     let busySlots = 0
     let totalUpgrades = 0
-    let totalLeaves = 0
     let totalInGroundValue = 0
     
     let maxBalance = { name: 'Нет', value: 0 }
@@ -72,9 +71,6 @@ async function statsHandler(ctx) {
         const upgs = user.upgrades || {}
         totalUpgrades += (upgs.genetics || 0) + (upgs.selection || 0) + (upgs.agronomy || 0) + (upgs.land || 0)
 
-        // 6. Ивент (Листья)
-        totalLeaves += (user.leaves || 0)
-
         // 7. VIP
         if (now < user.vipUntil) {
             countVIP++
@@ -110,9 +106,8 @@ async function statsHandler(ctx) {
         `<i>🧪 Прогресс</i>\n` +
         `└ Куплено апгрейдов: <b>${totalUpgrades}</b>\n\n` +
 
-        `<i>💎 VIP и Ивент</i>\n` +
-        `├ Активных VIP: <b>${countVIP}</b> (ср. остаток: <b>${logic.format.formatShortTime(avgLeftVIP)}</b>)\n` +
-        `└ Листьев в обороте: <b>${logic.format.formatNumber(totalLeaves)}</b> 🍂`
+        `<i>💎 VIP</i>\n` +
+        `├ Активных VIP: <b>${countVIP}</b> (ср. остаток: <b>${logic.format.formatShortTime(avgLeftVIP)}</b>)\n`
 
     return ctx.reply(text, { parse_mode: 'HTML' })
 }

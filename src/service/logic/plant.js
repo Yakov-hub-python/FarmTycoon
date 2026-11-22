@@ -100,9 +100,6 @@ function harvestSlot(user, index) {
     if (event.isMarketCrisisActive()) {
         reward = Math.floor(reward * MARKET_CRISIS.multiplier)
     }
-    // Добавление листьев
-    const leaves = event.isEventActive()? countingLeaves(mutation) : 0
-    user.leaves += leaves
 
     // Обновляем статистику
     if(!user.stats) {
@@ -120,7 +117,7 @@ function harvestSlot(user, index) {
 
     return {
         ok: true,
-        item: { crop: slot.crop, mutation, reward, weight, leaves},
+        item: { crop: slot.crop, mutation, reward, weight},
     }
 }
 
@@ -139,19 +136,6 @@ function harvestAll(user) {
     return items
 }
 
-// ===== ЭВЕНТ =====
-/**
- * Считает, сколько осенних листьев выпадет за сбор в зависимости от мутации.
- * 
- * @param {string} mutation - Тип мутации ('common', 'silver', 'gold').
- * @returns {number} Количество листьев.
- */
-function countingLeaves(mutation){
-    if(mutation === 'common') return 1;
-    if(mutation === 'silver') return 3;
-    return 10;
-}
-
 module.exports = {
-    plant, harvestSlot, harvestAll, countingLeaves
+    plant, harvestSlot, harvestAll
 }

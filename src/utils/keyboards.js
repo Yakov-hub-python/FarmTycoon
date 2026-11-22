@@ -34,7 +34,6 @@ function mainMenuKb() {
             Markup.button.callback('👤 Профиль', 'profile'),
             Markup.button.callback('🤝 Друзья', 'friends')
         ],
-        logic.event.isEventActive()?[Markup.button.callback('🍂 Праздник Урожая', 'event')]: []
     ])
 }
 
@@ -159,16 +158,6 @@ function friendsKb(user) {
         [Markup.button.url('📤 Поделиться', `https://t.me/share/url?url=${link}&text=${shareText}`)],
         [{ text: '📋 Скопировать', copy_text: { text: link } }],
         [Markup.button.callback('⬅️ В меню', 'menu')],
-    ])
-}
-
-function eventKb(){
-    return Markup.inlineKeyboard([
-        [Markup.button.callback('🍄 Гриб (50 🍂)', 'event_buy_mushroom')],
-        [Markup.button.callback('👒 Шляпа (500 🍂)', 'event_buy_strawHat')],
-        [Markup.button.callback('👑 Титул (200 🍂)', 'event_buy_title')],
-        [Markup.button.callback('🎁 Ящик (100 🍂)', 'event_buy_lootbox')],
-        [Markup.button.callback('⬅️ В меню', 'menu')]
     ])
 }
 
@@ -306,6 +295,6 @@ function lootboxKb() {
 // ===== ЭКСПОРТ =====
 module.exports = {
     mainMenuKb, backKb, afterHarvestKb, farmKb,
-    shopKb, topsKb, friendsKb, eventKb, titlesKb, 
+    shopKb, topsKb, friendsKb, titlesKb, 
     profileKb, upgradeKb, lootboxKb
 }

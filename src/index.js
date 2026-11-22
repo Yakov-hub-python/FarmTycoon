@@ -30,11 +30,9 @@ server.listen(PORT, () => {
     console.log('HTTP', `✅ Сервер на порту ${PORT}`);
 });
 
-bot.launch().then(() => {
-    setTimeout(() => {
-        bot.telegram.sendMessage(ADMIN_ID, '✅ Бот запущен!').catch(() => {})
-    }, 1000)
-})
+bot.launch()
+bot.telegram.sendMessage(ADMIN_ID, '<b>✅ Бот запущен</b>', { parse_mode: 'HTML' }).catch(() => {})
+
 console.log('Бот запущен')
 
 process.once('SIGINT',  () => bot.stop('SIGINT'))

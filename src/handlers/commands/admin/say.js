@@ -13,7 +13,6 @@ async function sayHandler(ctx) {
         return ctx.reply('❌ Использование: <code>/say *Жирный текст* или _курсив_</code>', { parse_mode: 'HTML' })
     }
 
-    const storage = require('../../service/db')
     const users = await db.getAllUsers()
     await ctx.reply(`🚀 Начинаю рассылку для ${users.length} игроков...`)
 

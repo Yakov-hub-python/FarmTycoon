@@ -1,8 +1,6 @@
 const fs = require('fs')
 const path = require('path')
 const config = require('../service/config')
-const logic = require('../service/logic')
-const db = require('../service/db')
 
 const HOUR = 60 * 60 * 1000
 const DAY  = 24 * HOUR
@@ -11,42 +9,6 @@ const MAX_BACKUP_SIZE = 45 * 1024 * 1024   // лимит Telegram — 50 MB, б�
 const BACKUPS_TO_KEEP = 7
 
 const { DB_PATH, ADMIN_ID } = config
-
-// ---------- УВЕДОМЛЕНИЯ О КОНЦЕ ИВЕНТА ----------
-function daysLeft() {
-    const diff = config.EVENT_END_TIMESTAMP - Date.now()
-    return diff > 0 ? Math.ceil(diff / DAY) : 0
-}
-
-async function sendEventWarnings(bot) {
-    const d = daysLeft()
-    if (d !== 3 && d !== 1) return
-
-    const users = await db.getAllUsers()
-    let sent = 0
-
-    for (const user of users) {
-        if (!user.leaves || user.leaves <= 0) continue
-        if (user.notificationsEnabled === false) continue
-        if (d === 3 && user.eventEndNotified3d) continue
-        if (d === 1 && user.eventEndNotified1d) continue
-
-        const text = d === 3
-            ? `🍂 Ивент закончится через 3 дня!\nУ тебя ${user.leaves} листьев — потрать: /farm → 🍂 Праздник Урожая`
-            : `🍂 Последний день ивента!\nУ тебя ${user.leaves} листьев — не забудь потратить: /farm → 🍂 Праздник Урожая`
-
-        try {
-            await bot.telegram.sendMessage(user.id, text, { parse_mode: 'HTML' })
-            if (d === 3) user.eventEndNotified3d = true
-            if (d === 1) user.eventEndNotified1d = true
-            await db.saveUser(user)
-            sent++
-        } catch (e) {
-            console.error(`[EVENT] notify failed user=${user.id}: ${e.message}`)
-        }
-    }
-    console.log(`[EVENT] ${d}d warnings: sent=${sent}`)
-}
 
 // ---------- БЭКАП ----------
 async function backupCron(bot) {
@@ -139,11 +101,6 @@ async function backupCron(bot) {
 
 // ---------- ЗАПУСК ----------
 function runCron(bot) {
-    setInterval(async () => {
-        if (!logic.event.isEventActive()) return
-        await sendEventWarnings(bot)
-    }, HOUR)
-
     // Первый бэкап через минуту после старта — чтобы не пропустить при частых рестартах Render
     setTimeout(() => {
         backupCron(bot).catch(e => console.error('[BACKUP] Unhandled:', e))

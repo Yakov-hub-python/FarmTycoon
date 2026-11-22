@@ -280,15 +280,6 @@ const LOOTBOX_ORDER = ['common', 'silver', 'gold', 'legendary']
 const SEED_FALLBACK_MULT = 0.66
 
 // ===== ИВЕНТЫ =====
-const EVENT_PRICES = {
-    mushroom: 50,
-    strawHat: 500,
-    title: 200,
-    lootbox: 100
-}
-
-const EVENT_END_TIMESTAMP = new Date('2026-11-23T00:00:00+03:00').getTime()
-
 const MARKET_CRISIS = {
     active: true, 
     multiplier: 1.10, // +10% к доходу
@@ -305,5 +296,5 @@ module.exports = {
     MUTATIONS, MUTATION_ROLL_ORDER, MUTATION_RANK,
     VIP_BONUS_MULT, EVENTS,
     TITLES, LAB_UPGRADES, LOOTBOX, SEED_FALLBACK_MULT, LOOTBOX_ORDER,
-    EVENT_PRICES, EVENT_END_TIMESTAMP, MARKET_CRISIS
+    MARKET_CRISIS
 }
