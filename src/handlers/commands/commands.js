@@ -11,8 +11,8 @@ function registerCommands(bot) {
     bot.command('top', async(ctx) => await require('./top').topHandler(ctx))
     bot.command('setnick', async(ctx) => await require('./setnick').setNick(ctx))
     bot.command('me', async (ctx) => await require('./me').meHandler(ctx))
-    bot.command('daily', async (ctx) => await require('./daily').dailyHandler(ctx))
     bot.command('promo', async (ctx) => await require('./promo').promoHandler(ctx))
+    bot.command('remind', async(ctx) => await require('./remind').remindCommand(ctx))
 
     // ===== АДМИН-КОМАНДЫ =====
     bot.command('restore', async(ctx) => require('./admin').restoreHandler(ctx))

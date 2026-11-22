@@ -39,7 +39,7 @@ async function slotCallback(ctx) {
         await renderFarm(ctx, user)
         return
     }
-
+    logic.reminder.resetBatch(user)
     await db.saveUser(ctx.from.id, user)
     await ctx.answerCbQuery()
     await safeEdit(
@@ -58,7 +58,7 @@ async function harvestAllCallback(ctx) {
         await ctx.answerCbQuery('⏳ Пока нечего собирать', { show_alert: true })
         return
     }
-
+    logic.reminder.resetBatch(user)
     await db.saveUser(ctx.from.id, user)
     await ctx.answerCbQuery()
     await safeEdit(

@@ -279,6 +279,22 @@ const LOOTBOX_ORDER = ['common', 'silver', 'gold', 'legendary']
 // Доля максимальной стоимости растения при компенсации за отсутствие слотов
 const SEED_FALLBACK_MULT = 0.66
 
+// ===== НАПОМИНАЛКА =====
+const REMINDER = {
+    CHECK_INTERVAL_SEC: 900,
+    REPEAT_MIN_MIN: 60,
+    REPEAT_MAX_MIN: 120,
+    QUIET_START: 22,
+    QUIET_END: 9,
+    TZ_OFFSET_HOURS: 3,
+    MAX_PER_BATCH: 3,
+}
+
+// ===== СТРИКИ =====
+const STREAK_REWARDS = [200, 300, 500, 700, 1000, 1500, 3000, 5000, 8000]
+const STREAK_TZ_OFFSET_HOURS = 3
+
+
 // ===== ИВЕНТЫ =====
 const MARKET_CRISIS = {
     active: true, 
@@ -296,5 +312,6 @@ module.exports = {
     MUTATIONS, MUTATION_ROLL_ORDER, MUTATION_RANK,
     VIP_BONUS_MULT, EVENTS,
     TITLES, LAB_UPGRADES, LOOTBOX, SEED_FALLBACK_MULT, LOOTBOX_ORDER,
+    REMINDER, STREAK_REWARDS, STREAK_TZ_OFFSET_HOURS,
     MARKET_CRISIS
 }

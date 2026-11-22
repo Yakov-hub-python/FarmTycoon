@@ -1,6 +1,10 @@
 const fs = require('fs')
 const path = require('path')
 const config = require('../service/config')
+const logic = require('../service/logic')
+const db = require('../service/db')
+const texts = require('../utils/texts')
+const kb = require('../utils/keyboards')
 
 const HOUR = 60 * 60 * 1000
 const DAY  = 24 * HOUR
@@ -99,16 +103,64 @@ async function backupCron(bot) {
     }
 }
 
+async function reminderTick(telegram){
+    const now = logic.time.now()
+    if(logic.reminder.isQuietHours(now)) return 
+
+    const users = await db.getAllUsers()
+
+    for(const cashedUser of users){
+        const user = await db.getUser(cashedUser.id)
+        if(!user) continue
+        if(!user.remindEnabled) continue
+
+        const readySlots = logic.reminder.getReadySlots(user)
+        if(readySlots.length === 0){
+            if(user.remindCount > 0 || user.remindNextAt !== 0){
+                logic.reminder.resetBatch(user) 
+                await db.saveUser(user.id, user)
+            }
+            continue
+        }
+        const verdict = logic.reminder.canRemind(user, now)
+        if(!verdict.ok) {
+            console.log(`[REMIND] ${user.id}: skip → ${verdict.error}`)
+            continue
+        }
+        try{
+            new Promise(r => setTimeout(r, 50))
+            await telegram.sendMessage(
+                user.id,
+                texts.remindText(user, readySlots),
+                { parse_mode: 'HTML', ...kb.remindKb() }
+            )
+        } catch (e){
+            if(e.response && e.response.error_code === 403){
+                user.remindEnabled = false
+                await db.saveUser(user.id, user)
+                continue
+            }
+            console.log(`[REMIND] ${user.id}: send error ${e.response?.error_code || '?'} ${e.description || e.message}`);
+            continue
+        }
+        logic.reminder.markSent(user, now)
+        await db.saveUser(user.id, user)
+    }
+}
+
 // ---------- ЗАПУСК ----------
 function runCron(bot) {
-    // Первый бэкап через минуту после старта — чтобы не пропустить при частых рестартах Render
     setTimeout(() => {
         backupCron(bot).catch(e => console.error('[BACKUP] Unhandled:', e))
     }, FIRST_RUN_DELAY)
 
     setInterval(async () => {
         await backupCron(bot).catch(e => console.error('[BACKUP] Unhandled:', e))
-    }, DAY)
+    }, DAY / 2)
+
+    setInterval(() => {
+        reminderTick(bot.telegram).catch(e => console.error('[REMIND]', e.message))
+    }, config.REMINDER.CHECK_INTERVAL_SEC * 1000)
 }
 
 module.exports = runCron

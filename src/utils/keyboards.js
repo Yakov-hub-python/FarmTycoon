@@ -292,9 +292,30 @@ function lootboxKb() {
     return Markup.inlineKeyboard(rows)
 }
 
+function remindKb(){
+    return Markup.inlineKeyboard([
+        [Markup.button.callback('🧺 Собрать урожай', 'farm')],
+        [Markup.button.callback('🔕 Не напоминать', 'remind_off')],
+    ])
+}
+
+/**
+ * Клавиатура экрана бонуса: кнопка забора только когда он доступен.
+ * ТЗ 5.2: заглушку «недоступно» не показываем — просто убираем кнопку.
+ *
+ * @param {Object} state - Результат getStreakState.
+ * @returns {Object} Опции для safeEdit.
+ */
+function dailyKb(state){
+    const rows = []
+    if(state.canClaim) rows.push([{text: '📅 Забрать награду', callback_data: 'daily_claim'}])
+    rows.push([{text: '⬅️ В меню', callback_data: 'menu'}])
+    return { reply_markup: { inline_keyboard: rows } }
+}
+
 // ===== ЭКСПОРТ =====
 module.exports = {
     mainMenuKb, backKb, afterHarvestKb, farmKb,
     shopKb, topsKb, friendsKb, titlesKb, 
-    profileKb, upgradeKb, lootboxKb
+    profileKb, upgradeKb, lootboxKb, remindKb, dailyKb
 }

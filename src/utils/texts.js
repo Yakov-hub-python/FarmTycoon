@@ -1,6 +1,6 @@
 // ИМПОРТЫ
 const logic = require('../service/logic')
-const { CROPS, CROP_ORDER, MUTATIONS, MUTATION_RANK, TITLES, LAB_UPGRADES, VIP_BONUS_MULT } = require('../service/config')
+const { CROPS, CROP_ORDER, MUTATIONS, MUTATION_RANK, TITLES, LAB_UPGRADES, LOOTBOX, LOOTBOX_ORDER, STREAK_REWARDS } = require('../service/config')
 
 // ===== ЭКРАНИРОВАНИЕ HTML =====
 function escapeHtml(s) {
@@ -372,9 +372,6 @@ function upgradeText(user) {
 /** 
  * Текст меню кейсов
 */
-// В texts.js
-const { LOOTBOX, LOOTBOX_ORDER } = require('../service/config')
-
 function lootboxText(user) {
     let text = `📦 <b>Кейсы</b>\n\n`
     
@@ -396,11 +393,74 @@ function lootboxText(user) {
     return text
 }
 
+function remindText(user, readySlots){
+    const items = readySlots.slice(0, 5).map(slot => {
+        const crop = CROPS[slot.crop]
+        return `${crop.emoji} ${escapeHtml(crop.name)}`
+    })
+    const rest = readySlots.length - items.length
+    const list = items.join(', ')
+    if(rest > 0) list += ` и ещё ${rest}`
+    return `🌾 <b>Урожай созрел!</b>\n\n` +
+        `Ждёт сбора: ${list}\n\n` +
+        `Заходи на ферму 🙂`
+}
+
+function remindOffText(){
+    return `🔕 <b>Напоминания отключены</b>\n\nВернуть: /remind on`
+}
+function remindStatusText(user){
+    if(user.remindEnabled){
+        return `🔔 Напоминания: включены\n\nВыключить: /remind off`
+    } else {
+        return `🔕 Напоминания: выключены\n\nВключить: /remind on`
+    }
+}
+
+/**
+ * Собирает текст экрана ежедневного бонуса.
+ * Чистая функция: только данные, без Telegram и db.
+ *
+ * @param {Object} user - Данные игрока.
+ * @param {Object} state - Результат logic.daily.getStreakState(user, now).
+ * @returns {string} Текст сообщения.
+ */
+function dailyText(user, state){
+    const REWARDS = STREAK_REWARDS
+    const claimed = state.canClaim ? state.day - 1 : state.day
+    const cells = []
+    for(let i = 1; i <= REWARDS.length; i++){
+        const amount = logic.format.formatNumber(REWARDS[i - 1])
+        if(i <= claimed) cells.push(`🔥${amount}`)
+        else if(i === state.day && state.canClaim) cells.push(`⭐${amount}`)
+        else cells.push(`⬜${amount}`)
+    }
+    const lines = [
+        '📅 Ежедневный бонус',
+        `🔥 Серия: ${user.streakDays} дн. (рекорд: ${user.streakBest})`,
+        '',
+        cells.join('  ')
+    ]
+    if(!state.continues && user.streakDays > 0){
+        lines.push('Серия оборвалась — начинаем заново 🌱')
+        lines.push('')
+    }
+    if(state.canClaim){
+        lines.push(`🎁 Сегодня: ${logic.format.formatNumber(state.nextReward)} монет (день ${state.day})`)
+    } else {
+        const nextDay = Math.min(state.day + 1, REWARDS.length)
+        const maxNote = state.day >= REWARDS.length ? ' (максимальная)' : ''
+        lines.push(`✅ Забрал сегодня. Возвращайся завтра — награда дня ${nextDay}${maxNote}.`)
+    }
+    return lines.join('\n')
+}
+
 // ===== ЭКСПОРТ =====
 module.exports = {
     WELCOME, HELP, PLANT_ERRORS, displayName,
     menuText, farmText, harvestText, 
     shopText, topCoinsText, topHarvestText,
     escapeHtml, displayName, friendsText,
-    titlesText, meText, upgradeText, lootboxText
+    titlesText, meText, upgradeText, lootboxText,
+    remindText, remindOffText, remindStatusText, dailyText
 }

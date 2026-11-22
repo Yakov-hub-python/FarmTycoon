@@ -13,7 +13,8 @@ function registerCallbacks(bot) {
     bot.action('top', async(ctx) => require('./top').topCallback(ctx))
     bot.action('top_coins', async(ctx) => require('./top').topCoinsCallback(ctx))
     bot.action('top_harvest', async(ctx) => require('./top').topHarvestCallback(ctx))
-    bot.action('daily', async(ctx) => require('./daily').dailyCallback(ctx))
+    bot.action('daily', async(ctx) => require('./daily').dailyScreen(ctx))
+    bot.action('daily_claim', async(ctx) => require('./daily').dailyCallback(ctx))
     bot.action(/^plant:(\w+):(\d+)/, async(ctx) => require('./shop').buyToShop(ctx));
     bot.action(/^update_count_(\d+)/, async(ctx) => require('./shop').updateShop(ctx));
     bot.action('friends', async(ctx) => require('./ref').showFriends(ctx))
@@ -26,6 +27,7 @@ function registerCallbacks(bot) {
     bot.action('lab_noop', async(ctx) => require('./upgrades').maxUpgrade(ctx))
     bot.action('lootbox', async(ctx) => require('./lootbox').showLootbox(ctx))
     bot.action(/^lootbox_open:(\w+)$/, async(ctx) => require('./lootbox').openLootbox(ctx))
+    bot.action('remind_off', async(ctx) => require('./remind').remindCallback(ctx))
 }
 
 

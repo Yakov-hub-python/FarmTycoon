@@ -20,14 +20,19 @@ function _newUser(userId) {
         createdAt: logic.time.now(),
         coin: START_COINS,
         slots: Array(START_SLOTS).fill(null),
-        last_collection: 0,
 
         stats: { bestHarvest: 0, bestCrop: null, bestMutation: null, bestWeight: 0 },
 
         upgrades: { genetics: 0, selection: 0, agronomy: 0, land: 0 },
         upgradeCooldowns: { genetics: 0, selection: 0, agronomy: 0, land: 0 },
 
-        caseCooldownUntil: 0,
+        remindEnabled: true,
+        remindNextAt: 0,
+        remindCount: 0,
+
+        streakDays: 0,        
+        streakBest: 0,
+        last_collection: 0,
 
         referredBy: null,
         referralCount: 0,
@@ -119,7 +124,7 @@ function normalizeUser(user, userId) {
     delete user.allTimeBestWeight
     delete user.weeklyChampionUntil
     delete user.weeklyChampionWeek
-
+    delete user.caseCooldownUntil
     // ===== БАЗОВЫЕ ПОЛЯ =====
     if (user.id !== userId) { user.id = userId; changed = true }
     if (!user.refCode) {
@@ -211,8 +216,29 @@ function normalizeUser(user, userId) {
             changed = true
         }
     }
-    if(!user.caseCooldownUntil || Number.isInteger(user.caseCooldownUntil)){
-        user.caseCooldownUntil = 0
+    if (user.remindEnabled !== true && user.remindEnabled !== false) {
+        user.remindEnabled = true; changed = true
+    }
+    if (!Number.isInteger(user.remindNextAt) || user.remindNextAt < 0) {
+        user.remindNextAt = 0; changed = true
+    }
+    if (!Number.isInteger(user.remindCount) || user.remindCount < 0) {
+        user.remindCount = 0; changed = true
+    }
+    if(!Number.isInteger(user.streakDays) || user.streakDays < 0){
+        user.streakDays = 0
+        changed = true
+    } 
+    if(!Number.isInteger(user.streakBest) || user.streakBest < 0) {
+        user.streakBest = 0
+        changed = true
+    }
+    if(!Number.isInteger(user.streakLastClaim) || user.streakLastClaim < 0){ 
+        user.streakLastClaim = 0
+        changed = true
+    }
+    if(user.streakBest > user.streakDays){
+        user.streakBest = user.streakDays
         changed = true
     }
     return changed

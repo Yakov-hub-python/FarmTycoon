@@ -1,58 +1,89 @@
-const time = require('./time')
+const config = require('../config')
+
+const REWARDS = config.STREAK_REWARDS
+const TZ_OFFSET = config.STREAK_TZ_OFFSET_HOURS
 
 /**
- * Проверяет, прошло ли 24 часа с момента последнего получения ежедневной награды.
+ * Возвращает ключ календарного дня 'YYYY-MM-DD' по UTC + смещение из конфига.
+ * toISOString всегда отдаёт UTC, поэтому время сдвигается ДО формирования строки.
+ * Локальную таймзону контейнера (Render) сознательно не используем.
  *
- * @param {Object} user - Данные игрока.
- * @param {number} user.last_collection - Unix-время (сек) последнего сбора.
- * @returns {{canCollect: boolean, remaining: number}} `canCollect` — можно ли забрать награду, `remaining` — сколько секунд осталось до следующей.
+ * @param {number} unixSec - Unix-время в секундах.
+ * @returns {string} Ключ дня вида '2026-11-23'.
  *
  * @example
- * checkLastCollection({ last_collection: now - 90000 })
- * // → { canCollect: true, remaining: 0 }
+ * dayKey(1795478400) // '2026-11-23'
  */
-function checkLastCollection(user){
-    const now = time.now()
-    const difference = Math.max(0, now - user.last_collection)
-    const day = 24 * 60 * 60
+function dayKey(unixSec){
+    return new Date((unixSec + TZ_OFFSET * 3600) * 1000).toISOString().slice(0, 10)
+}
+
+/**
+ * Считает состояние ежедневной серии входов.
+ *
+ * Серия живёт по календарной дате (UTC+3), а не «24 часа с последнего забора»:
+ * забор в 23:50 и забор в 00:10 следующего дня — это два разных дня серии.
+ * Серия продолжается, только если последний забор был «вчера» (или сегодня).
+ * Пропуск полного календарного дня сбрасывает серию на 1.
+ * Дни выше длины таблицы наград дают последнюю (максимальную) награду.
+ *
+ * @param {Object} user - Данные игрока.
+ * @param {number} user.streakDays - Текущая серия.
+ * @param {number} user.streakBest - Рекорд серии.
+ * @param {number} user.streakLastClaim - Unix-время (сек) последнего забора, 0 = никогда.
+ * @param {number} nowSec - Текущее Unix-время в секундах (time.now()).
+ * @returns {{canClaim: boolean, day: number, continues: boolean, nextReward: number}}
+ *   `canClaim` — доступен ли забор сегодня; `day` — день серии (1..7);
+ *   `continues` — серия не оборвана; `nextReward` — награда за текущий день.
+ *
+ * @example
+ * // Забирал вчера, серия 3:
+ * getStreakState(user, time.now()) // { canClaim: true, day: 4, continues: true, nextReward: 700 }
+ * // Забирал сегодня:
+ * getStreakState(user, time.now()) // { canClaim: false, day: 3, continues: true, nextReward: 700 }
+ */
+function getStreakState(user, nowSec){
+    const today = dayKey(nowSec)
+    const yesterday = dayKey(nowSec - 24 * 60 * 60)
+    const wasToday = user.streakLastClaim > 0 && dayKey(user.streakLastClaim) === today
+    const wasYesterday = user.streakLastClaim > 0 && dayKey(user.streakLastClaim) === yesterday
+    const canClaim = !wasToday
+    const day = canClaim
+        ? (wasYesterday ? Math.min(user.streakDays + 1, REWARDS.length) : 1)
+        : Math.min(user.streakDays, REWARDS.length)
     return {
-        canCollect: difference >= day, 
-        remaining: Math.max(0, day - difference) 
+        canClaim,
+        day,
+        continues: wasToday || wasYesterday,
+        nextReward: REWARDS[day - 1]
     }
 }
 
 /**
- * Рассчитывает размер ежедневной награды в зависимости от баланса игрока.
- * 
- * - Если баланс > 10 000: выдает 10% от баланса, но не больше 50 000.
- * - Если баланс от 5 000 до 10 000: фиксированные 1 000 монет.
- * - Если баланс < 5 000: фиксированные 300 монет.
+ * Проводит забор ежедневной награды: двигает поля серии.
  *
- * @param {Object} user - Данные игрока.
- * @param {number} user.coin - Текущий баланс монет.
- * @returns {number} Количество монет для награды.
- * 
+ * Вызывается ТОЛЬКО после проверки getStreakState().canClaim в обработчике,
+ * но содержит защитный предохранитель от гонок: если забор уже был сегодня,
+ * возвращает reward: 0 и не мутирует ничего.
+ *
+ * @param {Object} user - Данные игрока (мутируются поля streakDays / streakBest / streakLastClaim).
+ * @param {number} nowSec - Текущее Unix-время в секундах.
+ * @returns {{reward: number}} Начисляемая награда в монетах (0 — если забор недоступен).
+ *
  * @example
- * numberOfAwards({ coin: 5000 })   // 1000
- * numberOfAwards({ coin: 10000 })  // 1000
- * numberOfAwards({ coin: 250000 }) // 25000
+ * claim(user, time.now()) // { reward: 200 }
  */
-function numberOfAwards(user){
-    if(user.coin < 10000){
-        if(user.coin > 5000){
-            const reward = 1000
-            return reward
-        } else {
-            const reward = 300
-            return reward
-        }
-    } else {
-        const reward = Math.min(Math.floor(user.coin / 10), 50000)
-        return reward
-    }
+function claim(user, nowSec){
+    const state = getStreakState(user, nowSec)
+    if(!state.canClaim) return { reward: 0 }
+    user.streakDays = state.day
+    user.streakBest = Math.max(user.streakBest, state.day)
+    user.streakLastClaim = nowSec
+    return { reward: state.nextReward }
 }
 
 module.exports = {
-    checkLastCollection,
-    numberOfAwards
+    dayKey,
+    getStreakState,
+    claim
 }
