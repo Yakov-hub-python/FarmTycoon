@@ -19,7 +19,6 @@ function _newUser(userId) {
         nickname: 'Игрок',
         createdAt: logic.time.now(),
         coin: START_COINS,
-        leaves: 0,
         slots: Array(START_SLOTS).fill(null),
         last_collection: 0,
 
@@ -174,10 +173,6 @@ function normalizeUser(user, userId) {
     if (!Number.isInteger(user.vipUntil)) { user.vipUntil = 0; changed = true }
     if (!Array.isArray(user.usedPromos)) { user.usedPromos = []; changed = true }
 
-    // ===== ИВЕНТОВОЕ =====
-    if (user.leaves === undefined || !Number.isInteger(user.leaves) || user.leaves < 0) {
-        user.leaves = 0; changed = true
-    }
     if (typeof user.strawHat !== 'boolean') { user.strawHat = false; changed = true }
     if (!Array.isArray(user.ownedTitles)) { user.ownedTitles = []; changed = true }
     if (user.activeTitle === undefined || (typeof user.activeTitle !== 'string' && user.activeTitle !== null)) {

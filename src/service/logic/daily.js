@@ -24,7 +24,7 @@ function checkLastCollection(user){
 /**
  * Рассчитывает размер ежедневной награды в зависимости от баланса игрока.
  * 
- * - Если баланс > 10 000: выдает 10% от баланса.
+ * - Если баланс > 10 000: выдает 10% от баланса, но не больше 50 000.
  * - Если баланс от 5 000 до 10 000: фиксированные 1 000 монет.
  * - Если баланс < 5 000: фиксированные 300 монет.
  *
@@ -47,7 +47,7 @@ function numberOfAwards(user){
             return reward
         }
     } else {
-        const reward = Math.floor(user.coin / 10)
+        const reward = Math.min(Math.floor(user.coin / 10), 50000)
         return reward
     }
 }

@@ -26,7 +26,7 @@ async function sayHandler(ctx) {
         } catch (e) {
             if (e.message.includes('parse entities')) {
                 try {
-                    await ctx.telegram.sendMessage(user.id, text)
+                    await ctx.telegram.sendMessage(user.id, `📢 ${text}`)
                     success++
                 } catch (e2) {
                     failed++
