@@ -7,7 +7,7 @@ const { safeEdit } = require('../../utils/safeEdit')
  * @returns {Promise<void>}
  */
 async function topHandler(ctx) {
-    await safeEdit(ctx, '👇 Выберите категорию 👇', {
+    await ctx.reply('👇 Выберите категорию 👇', {
         parse_mode: 'HTML',
         ...kb.topsKb(),
     })

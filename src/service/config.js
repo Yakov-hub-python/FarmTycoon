@@ -113,7 +113,7 @@ const CROPS = {
     'crystalFruit': {
         name: 'Кристальный плод', emoji: '🌠', 
         growTime: 21600, seed: 0, fromCase: true,
-        minWeightKG: 800, maxWeightKG: 1200, pricePerKG: 4000,
+        minWeightKG: 800, maxWeightKG: 1200, pricePerKG: 2000,
     },
 }
 
@@ -291,8 +291,9 @@ const REMINDER = {
 }
 
 // ===== СТРИКИ =====
-const STREAK_REWARDS = [200, 300, 500, 700, 1000, 1500, 3000, 5000, 8000]
+const STREAK_REWARDS = [200, 300, 500, 700, 1000, 1500, 3000]
 const STREAK_TZ_OFFSET_HOURS = 3
+
 
 
 // ===== ИВЕНТЫ =====

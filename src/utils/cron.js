@@ -131,7 +131,7 @@ async function reminderTick(telegram){
             new Promise(r => setTimeout(r, 50))
             await telegram.sendMessage(
                 user.id,
-                texts.remindText(user, readySlots),
+                texts.remindText(readySlots),
                 { parse_mode: 'HTML', ...kb.remindKb() }
             )
         } catch (e){
@@ -150,10 +150,16 @@ async function reminderTick(telegram){
 
 // ---------- ЗАПУСК ----------
 function runCron(bot) {
+    // ===== ПЕРВЫЕ БЫСТРЫЕ ОТПРАВКИ =====
     setTimeout(() => {
         backupCron(bot).catch(e => console.error('[BACKUP] Unhandled:', e))
     }, FIRST_RUN_DELAY)
 
+    setTimeout(() => {
+        reminderTick(bot.telegram).catch(e => console.error('[REMIND]', e.message))
+    }, 10000)
+
+    // ===== ОСНОВНЫЕ ИНТЕРВАЛЫ =====
     setInterval(async () => {
         await backupCron(bot).catch(e => console.error('[BACKUP] Unhandled:', e))
     }, DAY / 2)
@@ -161,6 +167,8 @@ function runCron(bot) {
     setInterval(() => {
         reminderTick(bot.telegram).catch(e => console.error('[REMIND]', e.message))
     }, config.REMINDER.CHECK_INTERVAL_SEC * 1000)
+
+    
 }
 
 module.exports = runCron

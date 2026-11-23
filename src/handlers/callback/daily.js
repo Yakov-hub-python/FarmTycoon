@@ -11,7 +11,7 @@ const kb = require('../../utils/keyboards')
 async function dailyScreen(ctx){
     const user = await db.getUser(ctx.from.id)
     const state = logic.daily.getStreakState(user, logic.time.now())
-    return safeEdit(ctx, texts.dailyText(user, state), kb.dailyKb(state))
+    return safeEdit(ctx, texts.dailyText(user, state), {parse_mode: 'HTML', ...kb.dailyKb(state)})
 }
 
 /**

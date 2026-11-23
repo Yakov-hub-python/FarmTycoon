@@ -393,17 +393,10 @@ function lootboxText(user) {
     return text
 }
 
-function remindText(user, readySlots){
-    const items = readySlots.slice(0, 5).map(slot => {
-        const crop = CROPS[slot.crop]
-        return `${crop.emoji} ${escapeHtml(crop.name)}`
-    })
-    const rest = readySlots.length - items.length
-    const list = items.join(', ')
-    if(rest > 0) list += ` и ещё ${rest}`
-    return `🌾 <b>Урожай созрел!</b>\n\n` +
-        `Ждёт сбора: ${list}\n\n` +
-        `Заходи на ферму 🙂`
+function remindText(readySlots) {
+    return `🌾 <b>Урожай на твоей ферме созрел!</b>\n\n` +
+        `Ждут сбора: <b>${readySlots.length}</b> грядок.\n\n` +
+        `<blockquote>🚜 <i>Не дай урожаю пропасть — забери его прямо сейчас!</i></blockquote>\n\n`
 }
 
 function remindOffText(){
@@ -425,34 +418,48 @@ function remindStatusText(user){
  * @param {Object} state - Результат logic.daily.getStreakState(user, now).
  * @returns {string} Текст сообщения.
  */
-function dailyText(user, state){
-    const REWARDS = STREAK_REWARDS
-    const claimed = state.canClaim ? state.day - 1 : state.day
-    const cells = []
-    for(let i = 1; i <= REWARDS.length; i++){
-        const amount = logic.format.formatNumber(REWARDS[i - 1])
-        if(i <= claimed) cells.push(`🔥${amount}`)
-        else if(i === state.day && state.canClaim) cells.push(`⭐${amount}`)
-        else cells.push(`⬜${amount}`)
+function dailyText(user, state) {
+    const REWARDS = STREAK_REWARDS;
+    const claimed = state.canClaim ? state.day - 1 : state.day;
+    
+    const cells = [];
+    for (let i = 1; i <= REWARDS.length; i++) {
+        // 👇 Используем formatShortNumber, чтобы числа были короткими (1к, 1.5к)
+        const amount = logic.format.formatShortNumber(REWARDS[i - 1]);
+        
+        if (i <= claimed) {
+            cells.push(`✅${amount}`); // Получено
+        } else if (i === state.day && state.canClaim) {
+            cells.push(`🎁${amount}`); // Доступно (ждет клика)
+        } else {
+            cells.push(`🔒${amount}`); // Закрыто
+        }
     }
+    
     const lines = [
-        '📅 Ежедневный бонус',
-        `🔥 Серия: ${user.streakDays} дн. (рекорд: ${user.streakBest})`,
-        '',
-        cells.join('  ')
-    ]
-    if(!state.continues && user.streakDays > 0){
-        lines.push('Серия оборвалась — начинаем заново 🌱')
-        lines.push('')
+        `📅 <b>Ежедневный бонус</b>`,
+        `🔥 Серия: <b>${user.streakDays} дн.</b> <i>(рекорд: ${user.streakBest})</i>`,
+        ``
+    ];
+
+    if (!state.continues && user.streakDays > 0) {
+        lines.push(`⚠️ <i>Серия прервалась! Начинаем заново.</i>`);
+        lines.push(``);
     }
-    if(state.canClaim){
-        lines.push(`🎁 Сегодня: ${logic.format.formatNumber(state.nextReward)} монет (день ${state.day})`)
+
+    // Выводим красивую цепочку прогресса
+    lines.push(`<blockquote>${cells.join(' ─ ')}</blockquote>`);
+    lines.push(``);
+
+    if (state.canClaim) {
+        lines.push(`🎁 <b>Награда дня ${state.day} уже ждёт тебя!</b>`);
     } else {
-        const nextDay = Math.min(state.day + 1, REWARDS.length)
-        const maxNote = state.day >= REWARDS.length ? ' (максимальная)' : ''
-        lines.push(`✅ Забрал сегодня. Возвращайся завтра — награда дня ${nextDay}${maxNote}.`)
+        const nextDay = Math.min(state.day + 1, REWARDS.length);
+        const maxNote = state.day >= REWARDS.length ? ' (максимальная)' : '';
+        lines.push(`✅ <i>Возвращайся завтра за наградой ${nextDay} дня${maxNote}.</i>`);
     }
-    return lines.join('\n')
+    
+    return lines.join('\n');
 }
 
 // ===== ЭКСПОРТ =====
