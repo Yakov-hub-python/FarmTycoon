@@ -1,6 +1,6 @@
 // db.js
 const fs = require('fs/promises')
-const { DB_PATH, START_COINS, START_SLOTS, CROPS, SLOT_TOTAL_MAX } = require('./config')
+const { DB_PATH, START_COINS, START_SLOTS, CROPS, CROP_LIST, SLOT_TOTAL_MAX } = require('./config')
 const logic = require('./logic')
 
 /**
@@ -19,6 +19,7 @@ function _newUser(userId) {
         nickname: 'Игрок',
         createdAt: logic.time.now(),
         coin: START_COINS,
+        seeds: {},
         slots: Array(START_SLOTS).fill(null),
 
         stats: { bestHarvest: 0, bestCrop: null, bestMutation: null, bestWeight: 0 },
@@ -146,7 +147,16 @@ function normalizeUser(user, userId) {
     if (!Number.isInteger(user.last_collection) || user.last_collection < 0) {
         user.last_collection = 0; changed = true
     }
-
+    if(!user.seeds || typeof user.seeds !== 'object'){
+        user.seeds = {}
+        changed = true
+    }
+    for(const crop of CROP_LIST){
+        if(!user.seeds[crop] || !Number.isInteger(user.seeds[crop]) || Number.isFinite(user.seeds[crop]) || !Number.isNaN(user.seeds[crop])){
+            user.seeds[crop] = 0
+            changed = true
+        }
+    }
     // ===== SLOTS =====
     if (!Array.isArray(user.slots)) { user.slots = Array(START_SLOTS).fill(null); changed = true }
     if (user.slots.length < START_SLOTS) {

@@ -117,6 +117,12 @@ const CROPS = {
     },
 }
 
+const CROP_LIST = [
+    'wheat', 'cucumber', 'carrot', 'strawberry', 'pepper', 
+    'pumpkin', 'tomato', 'corn', 'watermelon', 'peach', 'grape', 'pineapple',
+    'goldenGrape', 'moonWheat', 'fireFlower', 'crystalFruit'
+]
+
 const CROP_ORDER = [
     'wheat', 'cucumber', 'carrot', 'strawberry', 'pepper', 
     'pumpkin', 'tomato', 'corn', 'watermelon', 'peach', 'grape', 'pineapple'
@@ -125,8 +131,8 @@ const CROP_ORDER = [
 // ===== МУТАЦИИ =====
 const MUTATIONS = {
     'common': { name: 'Обычная', emoji: '', chance: 0.85, mult: 1.0 },
-    'silver': { name: 'Серебряная', emoji: '✨', chance: 0.12, mult: 1.75 },
-    'gold': { name: 'Золотая', emoji: '🌟', chance: 0.03, mult: 4.5 }
+    'silver': { name: 'Серебряная', emoji: '✨', chance: 0.12, mult: 1.5 },
+    'gold': { name: 'Золотая', emoji: '🌟', chance: 0.03, mult: 3 }
 }
 
 const MUTATION_ROLL_ORDER = ['gold', 'silver', 'common']
@@ -152,8 +158,8 @@ const EVENTS = [
         name: 'Засуха',
         emoji: '🔥',
         growthMult: 1.2,
-        sellMult: 1.4,
-        desc: 'Рост замедлен, но продажа +40%!'
+        sellMult: 1.2,
+        desc: 'Рост замедлен, но продажа +20%!'
     }
 ]
 
@@ -261,27 +267,24 @@ const LOOTBOX = {
     legendary: {
         name: 'Легендарный кейс',
         emoji: '💎',
-        price: 2_000_000,
+        price: 3_000_000,
         tagline: '💰 до 20 млн · 💎 VIP 7 дней\n🌱 2% — кристальный плод',
         drops: [
-            { chance: 33,   type: 'coins', amount: 1_400_000 },
-            { chance: 33,   type: 'coins', amount: 2_200_000 },
-            { chance: 20,   type: 'coins', amount: 2_400_000 },
-            { chance: 9,    type: 'coins', amount: 3_000_000 },
+            { chance: 33,   type: 'coins', amount: 2_400_000 },
+            { chance: 33,   type: 'coins', amount: 3_200_000 },
+            { chance: 20,   type: 'coins', amount: 3_400_000 },
+            { chance: 10.5,    type: 'coins', amount: 4_000_000 },
             { chance: 1.5,  type: 'vip', days: 7 },
-            { chance: 2,    type: 'seed', pool: ['crystalFruit'] },
-            { chance: 1.5,  type: 'coins', amount: 20_000_000 },
+            { chance: 1.5,    type: 'seed', pool: ['crystalFruit'] },
+            { chance: 1,  type: 'coins', amount:12_000_000 },
         ],
     },
 }
 const LOOTBOX_ORDER = ['common', 'silver', 'gold', 'legendary']
-
-// Доля максимальной стоимости растения при компенсации за отсутствие слотов
 const SEED_FALLBACK_MULT = 0.66
-
 // ===== НАПОМИНАЛКА =====
 const REMINDER = {
-    CHECK_INTERVAL_SEC: 900,
+    CHECK_INTERVAL_SEC: 1800,
     REPEAT_MIN_MIN: 60,
     REPEAT_MAX_MIN: 120,
     QUIET_START: 22,
@@ -309,7 +312,7 @@ module.exports = {
     BOT_TOKEN, DB_PATH, ADMIN_ID, TIME_UNITS, NUMBER_UNITS,
     START_COINS, START_SLOTS,
     SLOT_BASE_PRICE, SLOT_PRICE_MULT, SLOT_PRICE_FIRST, SLOT_MAX_COUNT, SLOT_TOTAL_MAX,
-    CROPS, CROP_ORDER,
+    CROPS, CROP_LIST,CROP_ORDER,
     MUTATIONS, MUTATION_ROLL_ORDER, MUTATION_RANK,
     VIP_BONUS_MULT, EVENTS,
     TITLES, LAB_UPGRADES, LOOTBOX, SEED_FALLBACK_MULT, LOOTBOX_ORDER,

@@ -35,7 +35,6 @@ function formatNumber(n) {
  * formatShortNumber(NaN)         // '0'
  */
 function formatShortNumber(n, maxFractionDigits = 1){
-    if(!Number.isInteger(n)) return '0'
     if(!Number.isFinite(n)) return '0'
     if(Number.isNaN(n)) return '0'
     const sign = n < 0 ? '-' : '';

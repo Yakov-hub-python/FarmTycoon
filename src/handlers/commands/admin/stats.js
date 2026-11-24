@@ -34,12 +34,16 @@ async function statsHandler(ctx) {
     let countVIP = 0
     let totalTimeVIP = 0
 
-    // ===== ПРОХОД ПО БАЗЕ (ОДИН ЦИКЛ ДЛЯ ОПТИМИЗАЦИИ) =====
+    // ===== ПРОХОД ПО БАЗЕ =====
     for (const user of users) {
-        // 1. Игроки
-        if (now - user.last_collection < DAY) activeUsers++
+        // 1. Игроки (Считаем активным, если собирал бонус ИЛИ сажал за последние 24ч ИЛИ покупал апгрейд)
+        const hasRecentPlant = user.slots.some(s => s && (now - s.plantedAt < DAY))
+        const hasRecentUpgrade = Object.values(user.upgradeCooldowns || {}).some(cd => cd > now)
+        const isRecentlyActive = (now - user.last_collection < DAY) || hasRecentPlant || hasRecentUpgrade
+
+        if (isRecentlyActive) activeUsers++
         if (now - user.createdAt < DAY) newUsers++
-        if (now - user.last_collection > DAY * 7) inactiveUsers++
+        if (!isRecentlyActive && (now - user.createdAt > DAY * 7)) inactiveUsers++
 
         // 2. Рефералы
         if (user.referredBy) referredUsers++
@@ -58,9 +62,9 @@ async function statsHandler(ctx) {
         for (const slot of user.slots) {
             if (slot !== null) {
                 busySlots++
-                // Считаем примерную стоимость урожая в земле
                 const crop = CROPS[slot.crop]
-                if (crop) {
+                // Защита от NaN: проверяем, что у растения есть все нужные поля
+                if (crop && crop.minWeightKG && crop.maxWeightKG && crop.pricePerKG) {
                     const avgWeight = (crop.minWeightKG + crop.maxWeightKG) / 2
                     totalInGroundValue += (avgWeight * crop.pricePerKG)
                 }
@@ -71,7 +75,7 @@ async function statsHandler(ctx) {
         const upgs = user.upgrades || {}
         totalUpgrades += (upgs.genetics || 0) + (upgs.selection || 0) + (upgs.agronomy || 0) + (upgs.land || 0)
 
-        // 7. VIP
+        // 6. VIP
         if (now < user.vipUntil) {
             countVIP++
             totalTimeVIP += (user.vipUntil - now)
@@ -82,6 +86,9 @@ async function statsHandler(ctx) {
     const avgBalance = Math.round(totalBalance / countUsers)
     const avgSlots = (totalSlots / countUsers).toFixed(1)
     const avgLeftVIP = countVIP > 0 ? Math.round(totalTimeVIP / countVIP) : 0
+    
+    // Округляем стоимость земли, чтобы избежать бага с дробными числами в formatShortNumber
+    const roundedInGroundValue = Math.round(totalInGroundValue)
 
     // ===== ФОРМИРОВАНИЕ ТЕКСТА =====
     const text = `<b>📊 Статистика бота</b>\n\n` +
@@ -100,7 +107,7 @@ async function statsHandler(ctx) {
         `├ Суммарный баланс: <b>${logic.format.formatShortNumber(totalBalance)}</b>\n` +
         `├ Средний баланс: <b>${logic.format.formatShortNumber(avgBalance)}</b>\n` +
         `├ Макс. баланс: <b>${logic.format.formatShortNumber(maxBalance.value)}</b> (${maxBalance.name})\n` +
-        `├ В земле (примерно): <b>${logic.format.formatShortNumber(totalInGroundValue)}</b>\n` +
+        `├ В земле (примерно): <b>${logic.format.formatShortNumber(roundedInGroundValue)}</b>\n` +
         `└ Слотов занято: <b>${busySlots}</b> / ${totalSlots} (в среднем ${avgSlots} на игрока)\n\n` +
         
         `<i>🧪 Прогресс</i>\n` +

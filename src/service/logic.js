@@ -30,5 +30,5 @@ module.exports = {
     event,
     upgrades,
     lootbox,
-    reminder
+    reminder,
 }

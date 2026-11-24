@@ -10,7 +10,7 @@ async function remindCommand(ctx){
         await db.saveUser(ctx.from.id, user)
         return ctx.reply(texts.remindStatusText(user))
     } 
-    if(args[1] === 'off') {
+    if(args[1] === 'on') {
         user.remindEnabled = true
         await db.saveUser(ctx.from.id, user)
         return ctx.reply(texts.remindStatusText(user))
